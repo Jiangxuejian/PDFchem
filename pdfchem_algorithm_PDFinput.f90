@@ -157,7 +157,7 @@ do ipref = 1,1681 !No. PDR simulations
 
 enddo
 !write(6,*) "Prefix is: ", prefix
-write(6,*) output_file, 'written!'
+!write(6,*) output_file, 'written!'
 
 !~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 !~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -217,7 +217,7 @@ subroutine readpdf
   enddo
   avin = 10**avin
   pdfin = 10**pdfin
-  write(6,*) input_file, avin(1), pdfin(1), 'Read!'
+  !write(6,*) input_file, avin(1), pdfin(1), 'Read!'
 
   ! Close the input and output files
   !close(10)

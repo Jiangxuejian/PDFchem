@@ -10,11 +10,21 @@ from matplotlib.offsetbox import AnchoredText
 import os, shutil, glob, datetime, subprocess
 from scipy.interpolate import griddata
 import concurrent.futures
-max_workers = 8
 # Importing warnings
 import warnings
 # Suppress all warnings
 warnings.filterwarnings('ignore')
+
+# ------------------------------------------------------
+# -------------- User defined parameters ---------------
+max_workers = 34
+# Check if there are AV-PDF file(s) provided by the user
+#avpdf_dir =  'avpdfs'
+avpdf_dir =  os.path.join('..', '500pixel_pdf')
+# -------------- User defined parameters ---------------
+# ------------------------------------------------------
+
+
 
 # %%
 matplotlib.rc('font',size=17)
@@ -46,9 +56,6 @@ writeout = np.column_stack((av_bar,s,metallicity))
 np.savetxt('pdfchem.params',writeout,delimiter=' ',fmt='%1.4e')
 
 # %%
-# Check if there are AV-PDF file(s) provided by the user
-
-avpdf_dir =  os.path.join('..', 'avpdfs')
 avpdf_files= glob.glob(os.path.join(avpdf_dir,'*.dat'))
 if os.path.exists(avpdf_files[0]):
     print(f'User PDF data file available.')
@@ -78,14 +85,13 @@ def plot_pdf(pdf_i, av, pdf, pdf_type):
         plt.title('Av-PDF from observation')
     if pdf_type == 'model':
         plt.title(f'Mean={av_bar}, width={s}')
-    pdf_fig_path = os.path.join('Fig_pdf', f'PDF_{pdf_i}.png')
+    pdf_fig_path = os.path.join('Fig_pdf', f'PDF{pdf_i}.png')
     if not os.path.exists('Fig_pdf'): os.mkdir('Fig_pdf')
     plt.savefig(pdf_fig_path, bbox_inches='tight')
     print('PDF Plots Generated.')
     return
 
-# %%
-# Individual plot
+# %% Individual plot
 # Enter quantity to plot (ratios are generally preferred, especially
 #                        for brightness temperatures)
 # qty = Tco21/Tco10 # e.g. 'CO' for CO abundance, 'Tco21/Tco10' for CO(2-1)/CO(1-0)
@@ -119,12 +125,12 @@ def plot_individual(pdf_i, qty, xi, yi, points, title=''):
     plt.suptitle(title,weight='bold',y=0.95)
 
     individual_fig_dir = f'Fig_{dir_output}'
-    individual_fig_path = os.path.join(individual_fig_dir, f'{dir_output}_{pdf_i}.png')
+    individual_fig_path = os.path.join(individual_fig_dir, f'{dir_output}{pdf_i}.png')
     if not os.path.exists(individual_fig_dir): os.mkdir(individual_fig_dir)
     plt.savefig(individual_fig_path, bbox_inches='tight')
     print(f'Figure of {title} Generated.')
     return
-# %%
+# %% Plot Carbon maps
 
 def plot_carbon(pdf_i, xi, yi, points):
     #carbon cycle map
@@ -179,13 +185,12 @@ def plot_carbon(pdf_i, xi, yi, points):
     axs[1].set_xlabel(r'$\log_{10}\,\,\zeta_{\rm CR}$ [s$^{-1}$]')
     axs[1].set_title(r'Antenna temperatures')
 
-    Carbon_fig_path = os.path.join('Fig_carbon', f'Carbon_map_{pdf_i}.png')
+    Carbon_fig_path = os.path.join('Fig_carbon', f'Carbon_map{pdf_i}.png')
     if not os.path.exists('Fig_carbon'): os.mkdir('Fig_carbon')
     plt.savefig(Carbon_fig_path, bbox_inches='tight')
     print(f'Carbon Maps Generated.')
     return
-# %%
-#Collective plot similar to paper
+# %% Collective plot similar to paper
 def plot_collective(pdf_i, xi, yi, points, title=''):
     fig, axs = plt.subplots(4, 5, figsize=(20,19))
     xt = -16.85; yt = -0.65
@@ -482,7 +487,7 @@ def plot_collective(pdf_i, xi, yi, points, title=''):
     plt.suptitle(title, y=0.93, weight='bold')
 
     collective_fig_dir = 'Fig_Collective'
-    collective_fig_path = os.path.join(collective_fig_dir, f'Collective_{pdf_i}.png')
+    collective_fig_path = os.path.join(collective_fig_dir, f'Collective{pdf_i}.png')
     if not os.path.exists(collective_fig_dir): os.mkdir(collective_fig_dir)
     plt.savefig(collective_fig_path, bbox_inches='tight')
     print(f'Collective Figures Generated.')
@@ -498,33 +503,32 @@ successful runs return "0" signal after ~30 seconds depending on your machine
 '''
 
 def process_file(avpdf_file):
-    # TODO: Replace this with your computation
-    # print(f"Processing {avpdf_file}")
-    pdf_i = avpdf_file.split('.')[2].split('_')[-1]
+    #pdf_i = avpdf_file.split('.')[2].split('_')[-1]
+    pdf_i =  avpdf_file.split('/')[-1].split('.')[0][-6:]
     #shutil.copy(avpdf_file, 'avpdf_input.dat')
-    print(f'{screen_time()}{pdf_i}: Reading PDF file "{avpdf_file}" and running PDFchem...\n')
-    pdfchem_output_file = os.path.join(f'pdfchem_outputs', f'output_{pdf_i}.dat')
+    #print(f'{screen_time()}{pdf_i}: Reading PDF file "{avpdf_file}" and running PDFchem...\n')
+    pdfchem_output_file = os.path.join(f'pdfchem_outputs', f'output{pdf_i}.dat')
     if not os.path.exists('pdfchem_outputs'): os.mkdir('pdfchem_outputs')
+
     subprocess.call(['./pdfchem_algorithm_PDFinput', avpdf_file, pdfchem_output_file])
     #os.system(f'./pdfchem_algorithm_PDFinput {avpdf_file} output_{pdf_i}.dat')
     #shutil.copy('output.dat', pdfchem_output_file)
-    # read the output from the algorithm
     return
 
 
 # Create a ThreadPoolExecutor with n worker threads
 with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
     # Submit each file to the executor for processing
+    print(f'{screen_time()}: Reading \033[0;31m{max_workers}\33[0m PDF files and running PDFchem in parallel mode.')
     futures = [executor.submit(process_file, filename) for filename in avpdf_files]
     # Wait for all the futures to complete
     concurrent.futures.wait(futures)
 
 
-
 for pdf_i, avpdf_file in enumerate(avpdf_files):
-    pdf_i = pdf_i + 1
-    pdfchem_output_file = os.path.join(f'pdfchem_outputs', f'output_{pdf_i}.dat')
-# read the output from the algorithm
+    #pdf_i = pdf_i + 1
+    pdf_i =  avpdf_file.split('/')[-1].split('.')[0][-6:]
+    pdfchem_output_file = os.path.join(f'pdfchem_outputs', f'output{pdf_i}.dat')
     # inputfile = pdfchem_output_file # f'output_{pdf_i}.dat'
     title = r'PDFchem result'
 # %%
@@ -575,14 +579,11 @@ for pdf_i, avpdf_file in enumerate(avpdf_files):
     yi = np.linspace(min(np.log10(UV)), max(np.log10(UV)), 50)
     points = np.array([np.log10(CR),np.log10(UV)]).T
 # %%
-#Plot the user-defined Av,obs -- PDF
 
-    print(f'{screen_time()}{pdf_i}:')
+    print(f'{screen_time()}({pdf_i[1:3]}, {pdf_i[-2]}):')
     plot_pdf(pdf_i, av, pdf, pdf_type)
     plot_individual(pdf_i, Tco21/Tco10, xi, yi, points, 'Tco21/Tco10')
     plot_carbon(pdf_i, xi, yi, points)
     plot_collective(pdf_i, xi, yi, points)
     # qty = Tco21/Tco10 # e.g. 'CO' for CO abundance, 'Tco21/Tco10' for CO(2-1)/CO(1-0)
-
-
 
