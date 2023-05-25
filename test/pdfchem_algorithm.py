@@ -1,3 +1,4 @@
+#%%
 def main():
 
     import numpy as np
@@ -7,6 +8,8 @@ def main():
     from decimal import Decimal
     import h5py
     
+    np.seterr(divide='ignore', invalid='ignore')
+
     pc2cm = 3.0856776e18
     mhp = 1.6726219e-24
     freq0 = np.zeros(17)
@@ -39,8 +42,6 @@ def main():
     pi = math.pi        # 3.1415927
     mhp = 1.6726218e-24 # g
 
-
-    freq0 = np.zeros(Nspec)
     g = np.zeros((Nspec, 2))
     spec = [""] * Nspec
 
@@ -60,18 +61,14 @@ def main():
     mh = np.array([12.*mhp, 12.*mhp, 12.*mhp, 12.*mhp, 16.*mhp, 16.*mhp, 16.*mhp, 28.*mhp, 28.*mhp, 28.*mhp, 28.*mhp,
     28.*mhp, 28.*mhp, 28.*mhp, 28.*mhp, 28.*mhp, 28.*mhp])
 
-
     # Call constants
-    # constants()
 
-    def readfile(directory, prefix, Nspec):
-        directory = directory[:4]
-        hdf5_file = h5py.File('models/'+directory+'.hdf5', 'r')
+    def readfile(directory, prefix, hdf5_file):
+        #directory = directory[:4]
         fuv, cosmicrays, Z = hdf5_file[f'{prefix}/params'][:]
 
         pdr = hdf5_file[f'{prefix}/pdr']
         itot = np.shape(pdr)[0] # 490
-        N = np.zeros(Nspec + 1)
 
         #id =  np.int16(pdr[:,0])
         x =    pdr[:,1]
@@ -81,14 +78,14 @@ def main():
         nh =   pdr[:,6]
         abun = pdr[:,8:]
 
-        spop = hdf5_file[f'{prefix}/spop']       # 490, 28
+        spop = hdf5_file[f'{prefix}/spop'][:].T       # 490, 28
         pop = np.zeros((17, 2, itot))
         tau = np.zeros((17, itot))
 
         dummy1, dummy2,  pop[0, 0], pop[0, 1], dummy3, dummy4, dummy5, pop[1, 0], pop[1, 1], pop[2, 1],\
         dummy6, dummy7, pop[4, 0], pop[4, 1], pop[5, 1], dummy8, dummy9, \
         pop[7, 0], pop[7, 1], pop[8, 1], pop[9, 1], pop[10, 1], \
-        pop[11, 1], pop[12, 1], pop[13, 1], pop[14, 1], pop[15, 1], pop[16, 1] = spop[:].T
+        pop[11, 1], pop[12, 1], pop[13, 1], pop[14, 1], pop[15, 1], pop[16, 1] = spop[:]
 
         # record pairs
         pop[2, 0, :] = pop[1, 0, :]; pop[3, 1, :] = pop[2, 1, :]; pop[3, 0, :] = pop[1, 1, :]
@@ -96,10 +93,8 @@ def main():
         pop[8, 0, :] = pop[7, 1, :]; pop[9, 0, :] = pop[8, 1, :]; pop[10, 0, :] = pop[9, 1, :]
         pop[11, 0, :] = pop[10, 1,:]; pop[12, 0, :] = pop[11, 1,:]; pop[13, 0, :] = pop[12, 1,:]
         pop[14, 0, :] = pop[13, 1,:]; pop[15, 0, :] = pop[14, 1,:]; pop[16, 0, :] = pop[15, 1,:]
-        hdf5_file.close()
 
-        return fuv,cosmicrays,Z, tgas, tdust, abun, N, x, nh, itot, pop, tau
-
+        return fuv,cosmicrays,Z, tgas, tdust, abun, x, nh, itot, pop, tau
 
     # Av,obs - PDF function
     def pdf(x, s, m):
@@ -152,8 +147,7 @@ def main():
         return pref
 
     # Input parameters
-    with open('./pdfchem.params', 'r') as f:
-        av_bar, s, metallicity = [float(x) for x in f.readline().split()]
+    av_bar, s, metallicity = np.loadtxt('./pdfchem.params')
 
     if metallicity == 0.1:
         directory = 'Z0p1/'
@@ -163,6 +157,8 @@ def main():
         directory = 'Z1p0/'
     elif metallicity == 2.0:
         directory = 'Z2p0/'
+
+    hdf5_file = h5py.File('models/'+directory[:4]+'.hdf5', 'r')
 
     # Check if user has an input AV-PDF file. If not, call makepdf to create a simulated PDF.
     if os.path.isfile('avpdf_input.dat'):
@@ -174,88 +170,93 @@ def main():
 
     outfile = open('output_py.dat', 'w')
 
+    factor1 = A*c**2/8./pi/freq0**2 # to speed up the calculation
+    factor2 = c**2/2/kb/freq0**2
+    screen_time = datetime.datetime.now().strftime("\033[0;32m%H:%M:%S %Y-%m-%d > \33[0m")
+    print(f"\r{screen_time} Looping through {2501} Simulations", end='', flush=True)
     for ipref in range(0, 2501): # No. PDR simulations
-        screen_time = datetime.datetime.now().strftime("\033[0;32m%H:%M:%S %Y-%m-%d > \33[0m")
-        print(f"\r{screen_time} Looping through {ipref+1}/{2501} Simulations", end='', flush=True)
         prefix = pref[ipref]
 
         # calculate column densities of species
-        N, Ntgas, Ntot_nopdf, Nrho = 0, 0, 0, 0
-        fuv,cosmicrays,Z, tgas, tdust, abun, N, x, nh, itot, pop, tau = readfile(directory, prefix, Nspec) # call readfile function
+        N = np.zeros(Nspec + 1)
+        Ntgas, Ntot_nopdf, Nrho = 0, 0, 0
+        fuv,cosmicrays,Z, tgas, tdust, abun, x, nh, itot, pop, tau = readfile(directory, prefix, hdf5_file) # call readfile function
+        freq1 = np.tile(freq0[:, np.newaxis], (1, itot-1))
+        mh1 = np.tile(mh[:, np.newaxis], (1, itot-1))
+        tgas1 = np.tile(tgas[np.newaxis,:], (17, 1))
+        g1 = np.tile(np.expand_dims(g.T, axis=2), (1,1, itot-1))
         Tex = np.zeros((17, itot))
         Bnu = np.zeros((17, itot))
 
+        # Excitation temperatures and Background Radiation for radiative transfer
+        mask = (pop[:,1,:-1] == 0) | (np.abs(g1[1,:,:]*pop[:,0,:-1]/pop[:,1,:-1]/g1[0,:,:]-1) < 1e-2)
+        Tex = Tex[:,:-1]
+        Tex[mask] = 0
+        Bnu1 = Bnu[:,:-1]
+        Bnu1[mask] = 0
+        pop0 = pop[:,0,:-1]
+        pop1 = pop[:,1,:-1]
+        Tex[~mask] = (hp*freq1[~mask]/kb)/np.log(g1[1,~mask]*pop0[~mask]/pop1[~mask]/g1[0,~mask])
+        Bnu1[~mask] = (2.*hp*freq1[~mask]**3/c**2)/(np.exp(hp*freq1[~mask]/kb/Tex[~mask])-1) # Black body emission
+
+        sigma = (freq1/c)*np.sqrt(kb*tgas1[:,:-1]/mh1+vturb**2/2.) # sigma value used in phi
+        phi = 1/sigma/math.sqrt(2*pi) # phi value used in optical depth
+        frac = 0.5*((pop[:,0,:-1]+pop[:,0,1:])*g1[1]/g1[0]-(pop[:,1,:-1]+pop[:,1,1:]))
+        step = np.abs(x[:-1] - x[1:]) * pc2cm
+
+        Avobs = 0.06*(nh[:-1]**0.69)
         for i in range(itot-1):
-            Avobs = 0.06*(nh[i]**0.69)
-            #for k in range(avtot):
-            #    if avin[k] > Avobs: break
-            k = bisect.bisect_left(avin, Avobs)  
+            k = bisect.bisect_left(avin, Avobs[i])  
             if k >= avtot: k = avtot-1
-
-            step = abs(x[i]-x[i+1])*pc2cm
-            N[0] += 0.5*(nh[i]+nh[i+1])*step*pdfin[k] # total column density
-            N[1:Nspec+1] += 0.5*(nh[i]*abun[i,:] + nh[i+1]*abun[i+1,:])*step*pdfin[k] # species
-            Ntgas += 0.5*(nh[i]*tgas[i] + nh[i+1]*tgas[i+1])*step*pdfin[k] # for <Tgas>
-            Nrho += 0.5*(nh[i]**2*abun[i,30] + nh[i+1]**2*abun[i+1,30])*step*pdfin[k]
-
-            # Excitation temperatures and Background Radiation for radiative transfer
-
-            for j in range(17):
-                if pop[j,1,i] == 0 or abs(g[j,1]*pop[j,0,i]/pop[j,1,i]/g[j,0]-1) < 1e-2:
-                    Tex[j,i] = 0
-                    Bnu[j,i] = 0
-                #if pop[j,1,i] != 0 or abs(g[j,1]*pop[j,0,i]/pop[j,1,i]/g[j,0]-1) >= 1e-2:
-                else:
-                    try:
-                        Tex[j,i] = (hp*freq0[j]/kb)/math.log(g[j,1]*pop[j,0,i]/pop[j,1,i]/g[j,0]) # excitation temperature
-                    except:
-                        Tex[j,i] = (hp*freq0[j]/kb)/np.log(g[j,1]*pop[j,0,i]/pop[j,1,i]/g[j,0]) # excitation temperature
-                    Bnu[j,i] = (2.*hp*freq0[j]**3/c**2)/(math.exp(hp*freq0[j]/kb/Tex[j,i])-1) # Black body emission
-            sigma = (freq0/c)*np.sqrt(kb*tgas[i]/mh+vturb**2/2.) # sigma value used in phi
-            phi = 1/sigma/math.sqrt(2*pi) # phi value used in optical depth
-            frac = 0.5*((pop[:,0,i]+pop[:,0,i+1])*g[:,1]/g[:,0]-(pop[:,1,i]+pop[:,1,i+1]))
-            tau_incr += phi*(A*c**2/8./pi/freq0**2)*frac*step # optical depth calculation
+            N[0] += 0.5*(nh[i]+nh[i+1])*step[i]*pdfin[k] # total column density
+            N[1:Nspec+1] += 0.5*(nh[i]*abun[i,:] + nh[i+1]*abun[i+1,:])*step[i]*pdfin[k] # species
+            Ntgas += 0.5*(nh[i]*tgas[i] + nh[i+1]*tgas[i+1])*step[i]*pdfin[k] # for <Tgas>
+            Nrho += 0.5*(nh[i]**2*abun[i,30] + nh[i+1]**2*abun[i+1,30])*step[i]*pdfin[k]
+            tau_incr += phi[:,i]*( factor1 )*frac[:,i]*step[i] # optical depth calculation
             tau[:,i] = tau_incr # record value
         # solve radiative transfer equation
-        Ntr, Ntot, t_r, Ncol = np.zeros(17), 0, np.zeros(17), 0
+        #Ntr, Ntot, t_r, Ncol = np.zeros((17,)), 0, np.zeros((17,itot-2)), 0
         tau_cii, tau_ci, tau_co = 0, 0, 0
+
+        Ntr, Ntot, t_r, Ncol = np.zeros((17,)), 0, np.zeros((17,)), 0
+        #Avobs = 0.06*(nh[:-2]**0.69) # Av,obs -- nH relation
+        step = np.abs(x[:-2] - x[1:-1]) * pc2cm
         for i in range(itot-2):
-            Avobs = 0.06*(nh[i]**0.69) # Av,obs -- nH relation
-            #for k in range(avtot):
-            #    if (avin[k] > Avobs): break
-            k = bisect.bisect_left(avin, Avobs)  
-            if k >= avtot: k = avtot-1
-            #print(f"{k}, {avin[k]}, {Avobs}\r")
             dtau = tau[:, i+1] - tau[:, i]
-            for j in range(17): # frequencies explored (see subroutine constants)
-                if (dtau[j] > 1e10):
-                    t_r[j] = Bnu[j, i]
-                elif (dtau[j] > 1e-6):
-                    t_a_i = Bnu[j, i]*((1-math.exp(-dtau[j]))/dtau[j]-math.exp(-dtau[j]))
-                    t_a_ip1 = Bnu[j, i+1]*(1-(1-math.exp(-dtau[j]))/dtau[j])
-                    t_r[j] = t_r[j]*math.exp(-dtau[j])+t_a_i+t_a_ip1
-                else:
-                    t_r[j] = t_r[j]*(1-dtau[j])+(Bnu[j, i]+Bnu[j, i+1])*dtau[j]/2
-            step = abs(x[i]-x[i+1])*pc2cm
+            mask = dtau > 1e10 
+            t_r[mask] = Bnu[mask, i]
+            #print(t_r)
+            mask = (dtau > 1e-6) & (dtau <= 1e10)
+            t_a_i = Bnu[mask, i]*((1-np.exp(-dtau[mask]))/dtau[mask]-np.exp(-dtau[mask]))
+            t_a_ip1 = Bnu[mask, i+1]*(1-(1-np.exp(-dtau[mask]))/dtau[mask])
+            t_r[mask] = t_r[mask]*np.exp(-dtau[mask])+t_a_i+t_a_ip1
+            #print(t_r)
+            mask = dtau <= 1e-6
+            t_r[mask] = t_r[mask]*(1-dtau[mask])+(Bnu[mask, i]+Bnu[mask, i+1])*dtau[mask]/2
+
+            k = bisect.bisect_left(avin, Avobs[i])  
+            if k >= avtot: k = avtot-1
+            #step = abs(x[i]-x[i+1])*pc2cm
             Ntot = Ntot + pdfin[k]
-            Ntr = Ntr + (t_r*c**2/2/kb/freq0**2)*pdfin[k]
-            Ncol = Ncol + (0.5*(nh[i]+nh[i+1])*step)
+            Ntr = Ntr + (t_r*factor2)*pdfin[k]
+            Ncol = Ncol + (0.5*(nh[i]+nh[i+1])*step[i])
             tau_cii = tau_cii + dtau[0]*pdfin[k]
             tau_ci = tau_ci + dtau[1]*pdfin[k]
             tau_co = tau_co + dtau[7]*pdfin[k]
-        #print("\n",  Ntr)
 
-        # write output.dat
-        outfile.write('{:11.2e}{:11.2e}{:11.2e}{:11.2e}'.format(fuv, cosmicrays, Z, Ntgas/N[0]))  #!parameters of PDR simulation
-        for i in range(1,Nspec+1):
-            outfile.write('{:11.2e}'.format(N[i]/N[0]))
-        outfile.write('{:11.2e}{:11.2e}{:11.2e}'.format(Ntr[0], Ntr[1], Ntr[3]))
-        for i in range(7, 17):
-            outfile.write('{:11.2e}'.format(Ntr[i]))
-        outfile.write('\n')
+        output_content = []
+        output_content.append('{:11.2e}{:11.2e}{:11.2e}{:11.2e}'.format(fuv, cosmicrays, Z, Ntgas/N[0]))  #!parameters of PDR simulation
+        for i in range(1, Nspec+1):
+            output_content.append('{:11.2e}'.format(N[i]/N[0]))
+        output_content.append('{:11.2e}{:11.2e}{:11.2e}'.format(Ntr[0], Ntr[1], Ntr[3]))
+        output_content.extend('{:11.2e}'.format(Ntr[i]) for i in range(7, 17))
+        output_content.append('\n')
+        outfile.write(''.join(output_content))
+    hdf5_file.close()
     outfile.close()
 
     print('\nFinished!')
 
 if __name__ == '__main__':
     main()
+# %%
