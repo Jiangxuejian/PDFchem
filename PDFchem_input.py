@@ -3,27 +3,35 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.mlab as ml
 import matplotlib
-from matplotlib import colors
-from matplotlib import cm
+#from matplotlib import colors, cm
 from matplotlib.colors import ListedColormap, LinearSegmentedColormap
 from matplotlib.offsetbox import AnchoredText
-import os, shutil, glob, datetime, subprocess
+import os, glob, datetime, subprocess
 from scipy.interpolate import griddata
 import concurrent.futures
-# Importing warnings
-import warnings
 # Suppress all warnings
+import warnings
 warnings.filterwarnings('ignore')
 
 # ------------------------------------------------------
 # -------------- User defined parameters ---------------
-max_workers = 34
 # Check if there are AV-PDF file(s) provided by the user
-#avpdf_dir =  'avpdfs'
-avpdf_dir =  os.path.join('..', '500pixel_pdf')
+avpdf_dir =  os.path.normpath('../crop_image/200pixel_pdf')
+redo_calculation = 0
+
+# User-defined values for the Av,obs - PDF shape and metallicity
+av_bar = 1.4        # mean
+s = 0.42            # width (sigma)
+metallicity = 1.0   # allowed values: 0.1, 0.5, 1.0, 2.0
+if metallicity not in [0.1, 0.5, 1.0, 2.0]: 
+    print('ERROR: Allowed metallicity values are: 0.1, 0.5, 1, 2!')
+    exit
+
+# For parallel mode: define how many threads will be run simultaneously:
+max_workers = 40
+
 # -------------- User defined parameters ---------------
 # ------------------------------------------------------
-
 
 
 # %%
@@ -42,22 +50,13 @@ my_cmap = ListedColormap(my_cmap)
 cmap=my_cmap
 
 # %%
-#User-defined values for the Av,obs - PDF shape and metallicity
-av_bar = 1.4        # mean
-s = 0.42            # width (sigma)
-metallicity = 1.0   # allowed values: 0.1, 0.5, 1.0, 2.0
-#any other metallicity value will return a "512" signal and the algorithm won't run
-if metallicity not in [0.1, 0.5, 1.0, 2.0]: 
-    print('ERROR: Allowed metallicity values are: 0.1, 0.5, 1, 2!')
-    exit
-
-# %%
 writeout = np.column_stack((av_bar,s,metallicity))
 np.savetxt('pdfchem.params',writeout,delimiter=' ',fmt='%1.4e')
 
 # %%
-avpdf_files= glob.glob(os.path.join(avpdf_dir,'*.dat'))
-if os.path.exists(avpdf_files[0]):
+avpdf_files= sorted(glob.glob(os.path.join(avpdf_dir,'*.dat')))
+#if os.path.exists(avpdf_files[0]):
+if len(avpdf_files) > 0:
     print(f'User PDF data file available.')
     pdf_type = 'user'
 else:
@@ -85,7 +84,7 @@ def plot_pdf(pdf_i, av, pdf, pdf_type):
         plt.title('Av-PDF from observation')
     if pdf_type == 'model':
         plt.title(f'Mean={av_bar}, width={s}')
-    pdf_fig_path = os.path.join('Fig_pdf', f'PDF{pdf_i}.png')
+    pdf_fig_path = os.path.join('Figures', 'Fig_pdf', f'PDF{pdf_i}.png')
     if not os.path.exists('Fig_pdf'): os.mkdir('Fig_pdf')
     plt.savefig(pdf_fig_path, bbox_inches='tight')
     print('PDF Plots Generated.')
@@ -95,7 +94,13 @@ def plot_pdf(pdf_i, av, pdf, pdf_type):
 # Enter quantity to plot (ratios are generally preferred, especially
 #                        for brightness temperatures)
 # qty = Tco21/Tco10 # e.g. 'CO' for CO abundance, 'Tco21/Tco10' for CO(2-1)/CO(1-0)
-def plot_individual(pdf_i, qty, xi, yi, points, title=''):
+def plot_individual(pdf_i, qty, xi, yi, points, title='', Tco10_obs=''):
+    xx = float(pdf_i[1:3]); yy = float(pdf_i[-2:])
+    for ii in range(len(Tco10_obs)):
+        if xx == Tco10_obs[ii][0] and yy == Tco10_obs[ii][1]:
+            Tco10_obs_i = Tco10_obs[ii][2] 
+            break
+    
     plt.figure(figsize=(7,7))
     N=6 #No. contours
 
@@ -107,6 +112,7 @@ def plot_individual(pdf_i, qty, xi, yi, points, title=''):
     except:        # in newer versions of matplotlib there isn't mlab.griddata(), so use scipy instead:
         xi,yi = np.mgrid[min(np.log10(CR)):max(np.log10(CR)):50j, min(np.log10(UV)):max(np.log10(UV)):50j]
         zi_tr = griddata(points,np.log10(HI/2./H2),(xi,yi),method='linear') 
+        zi_tco10 = griddata(points,np.log10(Tco10),(xi,yi),method='linear') 
         zi = griddata(points,np.log10(qty),(xi,yi),method='linear')
 
     title = title
@@ -117,15 +123,19 @@ def plot_individual(pdf_i, qty, xi, yi, points, title=''):
     plt.pcolormesh(xi,yi,zi,cmap=cmap)
     CS = plt.contour(xi,yi,zi,N,colors='k')
     plt.clabel(CS,fmt='%1.1f')
-    plt.contour(xi,yi,zi_tr,[0],colors='r',linewidths=3.0) #plot HI-H2 transition (red line)
+    plt.contour(xi,yi,zi_tr,[0],colors='crimson',linewidths=3.0,linestyles='dashed') #plot HI-H2 transition (red line)
+    try:
+        plt.contour(xi,yi,zi_tco10,[np.log10(Tco10_obs_i)],colors='m',linewidths=3.0, alpha=1) #plot HI-H2 transition (red line)
+    except:
+        pass
     plt.xticks([-17,-16,-15,-14,-13])
-    plt.yticks([-1,0,1,2,3])
+    plt.yticks([-1,0,1,2,3,4,5])
     plt.xlabel(r'$\log_{10}\,\,\zeta_{\rm CR}$ [s$^{-1}$]')
     plt.ylabel(r'$\log_{10}\,\,\chi/\chi_0$')
     plt.suptitle(title,weight='bold',y=0.95)
 
     individual_fig_dir = f'Fig_{dir_output}'
-    individual_fig_path = os.path.join(individual_fig_dir, f'{dir_output}{pdf_i}.png')
+    individual_fig_path = os.path.join('Figures', individual_fig_dir, f'{dir_output}{pdf_i}.png')
     if not os.path.exists(individual_fig_dir): os.mkdir(individual_fig_dir)
     plt.savefig(individual_fig_path, bbox_inches='tight')
     print(f'Figure of {title} Generated.')
@@ -185,7 +195,7 @@ def plot_carbon(pdf_i, xi, yi, points):
     axs[1].set_xlabel(r'$\log_{10}\,\,\zeta_{\rm CR}$ [s$^{-1}$]')
     axs[1].set_title(r'Antenna temperatures')
 
-    Carbon_fig_path = os.path.join('Fig_carbon', f'Carbon_map{pdf_i}.png')
+    Carbon_fig_path = os.path.join('Figures', 'Fig_carbon', f'Carbon_map{pdf_i}.png')
     if not os.path.exists('Fig_carbon'): os.mkdir('Fig_carbon')
     plt.savefig(Carbon_fig_path, bbox_inches='tight')
     print(f'Carbon Maps Generated.')
@@ -487,7 +497,7 @@ def plot_collective(pdf_i, xi, yi, points, title=''):
     plt.suptitle(title, y=0.93, weight='bold')
 
     collective_fig_dir = 'Fig_Collective'
-    collective_fig_path = os.path.join(collective_fig_dir, f'Collective{pdf_i}.png')
+    collective_fig_path = os.path.join('Figures', collective_fig_dir, f'Collective{pdf_i}.png')
     if not os.path.exists(collective_fig_dir): os.mkdir(collective_fig_dir)
     plt.savefig(collective_fig_path, bbox_inches='tight')
     print(f'Collective Figures Generated.')
@@ -519,19 +529,15 @@ def process_file(avpdf_file):
 # Create a ThreadPoolExecutor with n worker threads
 with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
     # Submit each file to the executor for processing
-    print(f'{screen_time()}: Reading \033[0;31m{max_workers}\33[0m PDF files and running PDFchem in parallel mode.')
-    futures = [executor.submit(process_file, filename) for filename in avpdf_files]
+    if redo_calculation == 1:
+        print(f'{screen_time()}: Reading \033[0;31m{max_workers}\33[0m PDF files and running PDFchem in parallel mode.')
+        futures = [executor.submit(process_file, filename) for filename in avpdf_files]
     # Wait for all the futures to complete
-    concurrent.futures.wait(futures)
+        concurrent.futures.wait(futures)
+    else:
+        print(f'{screen_time()}: skip calculations.')
 
-
-for pdf_i, avpdf_file in enumerate(avpdf_files):
-    #pdf_i = pdf_i + 1
-    pdf_i =  avpdf_file.split('/')[-1].split('.')[0][-6:]
-    pdfchem_output_file = os.path.join(f'pdfchem_outputs', f'output{pdf_i}.dat')
-    # inputfile = pdfchem_output_file # f'output_{pdf_i}.dat'
-    title = r'PDFchem result'
-# %%
+#%%
 #Sequence of species
 # 1,H3+;  2,He+;   3,Mg;     4,H2+;   5,CH5+
 # 6,O2;   7,CH4+;  8,O+;     9,OH+;  10,Mg+
@@ -540,8 +546,16 @@ for pdf_i, avpdf_file in enumerate(avpdf_files):
 #26,He;  27,CH+;  28,CO;    29,OH;   30,O
 #31,H2;  32,H;    33,e-; 
 
-# %%
+f = open('CR-16.txt', 'w', encoding="utf-8")
+for avpdf_file in enumerate(avpdf_files):
+    #pdf_i = pdf_i + 1
+    pdf_i =  avpdf_file.split('/')[-1].split('.')[0][-6:]
+    pdfchem_output_file = os.path.join(f'pdfchem_outputs', f'output{pdf_i}.dat')
+    # inputfile = pdfchem_output_file # f'output_{pdf_i}.dat'
+    title = r'PDFchem result'
+
 #CHEMISTRY RESULTS
+
     d = np.genfromtxt(pdfchem_output_file)
 
     #UV radiation (Draine); cosmic-ray ionization rate (s-1); metallicity (Zsolar)
@@ -578,12 +592,91 @@ for pdf_i, avpdf_file in enumerate(avpdf_files):
     xi = np.linspace(min(np.log10(CR)), max(np.log10(CR)), 50)
     yi = np.linspace(min(np.log10(UV)), max(np.log10(UV)), 50)
     points = np.array([np.log10(CR),np.log10(UV)]).T
-# %%
 
-    print(f'{screen_time()}({pdf_i[1:3]}, {pdf_i[-2]}):')
-    plot_pdf(pdf_i, av, pdf, pdf_type)
-    plot_individual(pdf_i, Tco21/Tco10, xi, yi, points, 'Tco21/Tco10')
-    plot_carbon(pdf_i, xi, yi, points)
-    plot_collective(pdf_i, xi, yi, points)
+    Tco10_obs = np.loadtxt('../CO_data/co10_Tmb.txt', dtype={'names': ('xx', 'yy', 'Tmb', 'Unit'),
+                     'formats': ('i4', 'i4', 'f4', 'S1')})
+
+    xx = float(pdf_i[1:3]); yy = float(pdf_i[-2:])
+    print(f'{screen_time()}({xx}, {yy}):')
+    #plot_individual(pdf_i, Tco10, xi, yi, points, 'T(CO 1-0)', Tco10_obs = Tco10_obs)
+    #plot_individual(pdf_i, CO, xi, yi, points, 'CO abundance', Tco10_obs = Tco10_obs)
+    #plot_pdf(pdf_i, av, pdf, pdf_type)
+    #plot_individual(pdf_i, Tco21/Tco10, xi, yi, points, 'Tco21/Tco10')
+    #plot_carbon(pdf_i, xi, yi, points)
+    #plot_collective(pdf_i, xi, yi, points)
     # qty = Tco21/Tco10 # e.g. 'CO' for CO abundance, 'Tco21/Tco10' for CO(2-1)/CO(1-0)
 
+#   Use CO data to constrain and find the solution of UV
+    for ii in range(len(Tco10_obs)):
+        if xx == Tco10_obs[ii][0] and yy == Tco10_obs[ii][1]:
+            Tco10_obs_i = Tco10_obs[ii][2] 
+            CR_s = CR[np.where(np.log10(CR) == -16)]
+            UV_s = UV[np.where(np.log10(CR) == -16)]
+            Tco_s= Tco10[np.where(np.log10(CR) == -16)]
+            diff = abs(np.log10(Tco_s) - np.log10(Tco10_obs_i))
+            min_ind = np.argmin(diff)
+#            if diff[min_ind] < 1e-1:
+            f.write(f'{xx}, {yy}, {np.log10(CR_s[min_ind])}, {np.log10(UV_s[min_ind]):10.5f}, {np.log10(Tco_s[min_ind]):10.5f}, {np.log10(Tco10_obs_i):10.5f}, {diff[min_ind]}\n')
+f.close()
+
+
+# %%
+# from astropy.io import fits
+# import matplotlib.pyplot as plt
+# import astropy.units as u
+# import astropy.coordinates as coord
+# 
+# solution = np.loadtxt('CR-16.txt', delimiter=',')
+# xx = solution[:,0]; yy = solution[:,1]
+# #CR1 = solution[:,2]
+# UV1 = solution[:,3]
+# 
+# # populate an array with the UV values.
+# data = np.empty((22, 12))
+# data[:] = np.nan
+# for i, UV in enumerate(UV1):
+#     data[int(xx[i])-1, int(yy[i])-1] = UV  
+#     
+# # Extract the WCS information from the fits header
+# hdul = fits.open('../NH2_orionA.fits')
+# 
+# crval1 = hdul[0].header['CRVAL1']
+# crval2 = hdul[0].header['CRVAL2']
+# cdelt1 = hdul[0].header['CDELT1']
+# cdelt2 = hdul[0].header['CDELT2']
+# crpix1 = hdul[0].header['CRPIX1']
+# crpix2 = hdul[0].header['CRPIX2']
+# 
+# # Close the FITS file
+# hdul.close()
+# 
+# # Define the extent based on the WCS information
+# xmin = crval1 - (crpix1 - 1) * cdelt1
+# xmax = crval1 + (hdul[0].header['NAXIS1'] - crpix1) * cdelt1
+# ymin = crval2 - (crpix2 - 1) * cdelt2
+# ymax = crval2 + (hdul[0].header['NAXIS2'] - crpix2) * cdelt2
+# 
+# # Create a figure and axis
+# fig, ax = plt.subplots(figsize = (6,6))
+# # Plot your image
+# image = ax.imshow(data, extent=(xmin, xmax, ymin, ymax), origin='lower')
+# 
+# # Add a colorbar
+# cbar = plt.colorbar(image)
+# ax.set_xlabel('RA')
+# ax.set_ylabel('Dec')
+# # Convert and display RA and Dec in sexagesimal format
+# x_ticks = np.linspace(xmin, xmax, num=5)
+# x_ticks = np.arange(int(xmin), int(xmax)+1, -1)
+# ra_ticks = coord.Angle(x_ticks, unit=u.deg)
+# ra_tickslabel = ra_ticks.to_string(unit=u.hour, sep=':', precision=1)
+# ax.set_xticks(x_ticks, ra_tickslabel)
+# 
+# y_ticks = np.linspace(ymin, ymax, num=5)
+# y_ticks = np.arange(int(ymin), int(ymax)+1)
+# dec_ticks = coord.Angle(y_ticks, unit=u.deg)
+# dec_tickslabel = dec_ticks.to_string(unit=u.degree, sep=':', precision=0)
+# ax.set_yticks(y_ticks, dec_tickslabel)
+# ax.set_xlim(85.2,)
+# ax.set_ylim(-7.5, -4.5)
+# ax.set_title(r'UV (CRIR = 10$^{-16}$ s$^{-1}$)')
