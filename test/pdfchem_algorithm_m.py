@@ -3,10 +3,10 @@ import numpy as np
 import math
 import os, bisect
 import datetime
-from decimal import Decimal
+#from decimal import Decimal
 import h5py
 from multiprocessing import Pool, Manager
-    
+
 np.seterr(divide='ignore', invalid='ignore')
 
 pc2cm = 3.0856776e18
@@ -60,7 +60,8 @@ A = np.array([2.321e-06, 7.880e-08, 1.810e-14, 2.650e-07, 8.910e-05, 1.340e-10, 
 mh = np.array([12.*mhp, 12.*mhp, 12.*mhp, 12.*mhp, 16.*mhp, 16.*mhp, 16.*mhp, 28.*mhp, 28.*mhp, 28.*mhp, 28.*mhp,
 28.*mhp, 28.*mhp, 28.*mhp, 28.*mhp, 28.*mhp, 28.*mhp])
 
-
+def screen_time():
+    return datetime.datetime.now().strftime("\033[0;32m%H:%M:%S %Y-%m-%d > \33[0m")
 def readfile(prefix, hdf5_file):
     model = h5py.File(hdf5_file, 'r')
     #directory = directory[:4]
@@ -96,102 +97,6 @@ def readfile(prefix, hdf5_file):
     model.close()
     return fuv,cosmicrays,Z, tgas, tdust, abun, x, nh, itot, pop, tau
 
-
-def main(avpdf_file='', output_file='output_m.dat'):
-
-    # Call constants
-
-    # Av,obs - PDF function
-    def pdf(x, s, m):
-        return (1.0 / (s * math.sqrt(2.0 * pi))) * math.exp(-(math.log(x) - m) ** 2 / (2.0 * s ** 2))
-
-    # Make Av-PDF
-    def makepdf():
-        m = math.log(av_bar) - s ** 2 / 2.0
-        avtot = 500
-        avin = [0] * (avtot + 1)
-        pdfin = [0] * (avtot + 1)
-        with open('avpdf.dat', 'w') as f:
-            for i in range(avtot + 1):
-                lav = -2.0 + 4.0 * float(i) / float(avtot + 1)
-                avin[i] = 10.0 ** lav
-                pdfin[i] = pdf(float(avin[i]), s, m)
-                if pdfin[i] < 1e-10:
-                    pdfin[i] = 1e-10
-                f.write(str(avin[i]) + ' ' + str(pdfin[i]) + '\n')
-        return avin,pdfin,avtot
-
-    # Read inputted Av-PDF
-    def readpdf():
-        f = np.loadtxt(avpdf_file)
-        avtot = len(f)
-        avin = f[:,0]
-        pdfin = f[:,1]
-        avin = [Decimal('10') ** Decimal(x) for x in avin] # Issue: some values too large.
-        pdfin = [10.0 ** x for x in pdfin]
-
-        return avin,pdfin,avtot
-
-    # Make prefix for all inputs
-    def makeprefix():
-        num = [str(i).zfill(2) for i in range(61)]
-        pref = []
-        for i in range(41):
-            for j in range(61):
-                pref.append("zcr" + num[i] + "_uv" + num[j])
-        return pref
-
-    # Input parameters
-    av_bar, s, metallicity = np.loadtxt('./pdfchem.params')
-
-    if metallicity == 0.1:
-        directory = 'Z0p1/'
-    elif metallicity == 0.5:
-        directory = 'Z0p5/'
-    elif metallicity == 1.0:
-        directory = 'Z1p0/'
-    elif metallicity == 2.0:
-        directory = 'Z2p0/'
-
-    pref = makeprefix()
-    #hdf5_file = h5py.File('models/'+directory[:4]+'.hdf5', 'r')
-    hdf5_file = f'models/{directory[:4]}.hdf5'
-
-    # Check if user has an input AV-PDF file. If not, call makepdf to create a simulated PDF.
-    if os.path.isfile(avpdf_file):
-        avin, pdfin,avtot = readpdf()
-    else:
-        avin, pdfin,avtot = makepdf()
-
-
-
-    screen_time = datetime.datetime.now().strftime("\033[0;32m%H:%M:%S %Y-%m-%d > \33[0m")
-    print(f"\r{screen_time} Looping through {2501} Simulations", end='', flush=True)
-
-
-    #output_strarray = np.empty((5), dtype='str')
-    #output_strarray = [['']] * 5
-    # for ipref in range(0, 2501): # No. PDR simulations
-
-    num_iterations = 2501
-    # Create a shared list for output_strarray
-
-    with Manager() as manager:
-        output_strarray = manager.list([[''] for _ in range(num_iterations)])
-        with Pool() as pool:
-            pool.starmap(iteration, [(ipref, pref, hdf5_file, avtot, avin, pdfin, output_strarray) for ipref in range(num_iterations)])
-        output_strarray = list(output_strarray)
-
-    outfile = open(output_file, 'w')
-    for sublist in output_strarray:
-        outfile.write(''.join(map(str, sublist)))
-    outfile.close()
-    
-    #hdf5_file.close()
-
-    print('\nFinished!')
-
-
 def iteration(ipref, pref, hdf5_file, avtot, avin, pdfin, output_strarray):
     global tau_incr
     factor1 = A*c**2/8./pi/freq0**2 # to speed up the calculation
@@ -225,49 +130,47 @@ def iteration(ipref, pref, hdf5_file, avtot, avin, pdfin, output_strarray):
     frac = 0.5*((pop[:,0,:-1]+pop[:,0,1:])*g1[1]/g1[0]-(pop[:,1,:-1]+pop[:,1,1:]))
     step = np.abs(x[:-1] - x[1:]) * pc2cm
 
-    Avobs = 0.06*(nh[:-1]**0.69)
+    Avobs = 0.06*(nh[:-1]**0.69)        # Av,obs -- nH relation
+    # print('\n')
     for i in range(itot-1):
         k = bisect.bisect_left(avin, Avobs[i])  
         if k >= avtot: k = avtot-1
-        N[0] += 0.5*(nh[i]+nh[i+1])*step[i]*pdfin[k] # total column density
-        N[1:Nspec+1] += 0.5*(nh[i]*abun[i,:] + nh[i+1]*abun[i+1,:])*step[i]*pdfin[k] # species
-        Ntgas += 0.5*(nh[i]*tgas[i] + nh[i+1]*tgas[i+1])*step[i]*pdfin[k] # for <Tgas>
-        Nrho += 0.5*(nh[i]**2*abun[i,30] + nh[i+1]**2*abun[i+1,30])*step[i]*pdfin[k]
+        factor3 = step[i]*pdfin[k]
+        if Avobs[i] <= avin[k]:
+            N[0] += 0.5*(nh[i]+nh[i+1])*factor3 # total column density
+            N[1:Nspec+1] += 0.5*(nh[i]*abun[i,:] + nh[i+1]*abun[i+1,:])*factor3 # species
+            Ntgas += 0.5*(nh[i]*tgas[i] + nh[i+1]*tgas[i+1])*factor3 # for <Tgas>
+            Nrho += 0.5*(nh[i]**2*abun[i,30] + nh[i+1]**2*abun[i+1,30])*factor3
+        # print(i, k, nh[i], Avobs[i], avin[k], pdfin[k], N[0], Ntgas, Nrho)
         tau_incr += phi[:,i]*( factor1 )*frac[:,i]*step[i] # optical depth calculation
         tau[:,i] = tau_incr # record value
     # solve radiative transfer equation
-    #Ntr, Ntot, t_r, Ncol = np.zeros((17,)), 0, np.zeros((17,itot-2)), 0
     tau_cii, tau_ci, tau_co = 0, 0, 0
 
     Ntr, Ntot, t_r, Ncol = np.zeros((17,)), 0, np.zeros((17,)), 0
-    #Avobs = 0.06*(nh[:-2]**0.69) # Av,obs -- nH relation
     step = np.abs(x[:-2] - x[1:-1]) * pc2cm
     for i in range(itot-2):
         dtau = tau[:, i+1] - tau[:, i]
         mask = dtau > 1e10 
         t_r[mask] = Bnu[mask, i]
-        #print(t_r)
         mask = (dtau > 1e-6) & (dtau <= 1e10)
         t_a_i = Bnu[mask, i]*((1-np.exp(-dtau[mask]))/dtau[mask]-np.exp(-dtau[mask]))
         t_a_ip1 = Bnu[mask, i+1]*(1-(1-np.exp(-dtau[mask]))/dtau[mask])
         t_r[mask] = t_r[mask]*np.exp(-dtau[mask])+t_a_i+t_a_ip1
-        #print(t_r)
         mask = dtau <= 1e-6
         t_r[mask] = t_r[mask]*(1-dtau[mask])+(Bnu[mask, i]+Bnu[mask, i+1])*dtau[mask]/2
 
         k = bisect.bisect_left(avin, Avobs[i])  
         if k >= avtot: k = avtot-1
-        #step = abs(x[i]-x[i+1])*pc2cm
-        Ntot = Ntot + pdfin[k]
-        Ntr = Ntr + (t_r*factor2)*pdfin[k]
-        Ncol = Ncol + (0.5*(nh[i]+nh[i+1])*step[i])
-        tau_cii = tau_cii + dtau[0]*pdfin[k]
-        tau_ci = tau_ci + dtau[1]*pdfin[k]
-        tau_co = tau_co + dtau[7]*pdfin[k]
+        if Avobs[i] <= avin[k]:
+            Ntot = Ntot + pdfin[k]
+            Ntr = Ntr + (t_r*factor2)*pdfin[k]
+            Ncol = Ncol + (0.5*(nh[i]+nh[i+1])*step[i])
+            tau_cii = tau_cii + dtau[0]*pdfin[k]
+            tau_ci  = tau_ci  + dtau[1]*pdfin[k]
+            tau_co  = tau_co  + dtau[7]*pdfin[k]
 
     sublist = output_strarray[ipref] + [f'{fuv:11.2e}{cosmicrays:11.2e}{Z:11.2e}{Ntgas/N[0]:11.2e}']
-    #output_strarray[ipref].append(f'{fuv:11.2e}{cosmicrays:11.2e}{Z:11.2e}{Ntgas/N[0]:11.2e}') #!parameters of PDR simulation
-    
     for i in range(1, Nspec+1):
         sublist = sublist + [f'{N[i]/N[0]:11.2e}']
     sublist = sublist + [f'{Ntr[0]:11.2e}{Ntr[1]:11.2e}{Ntr[3]:11.2e}']
@@ -276,6 +179,92 @@ def iteration(ipref, pref, hdf5_file, avtot, avin, pdfin, output_strarray):
     sublist = sublist + ['\n']
     output_strarray[ipref] = sublist
 
+def main(avpdf_file='', output_file='output_m.dat', parallel=True):
+
+    # Av,obs - PDF function
+    def pdf(x, s, m):
+        return (1.0 / (s * math.sqrt(2.0 * pi))) * math.exp(-(math.log(x) - m) ** 2 / (2.0 * s ** 2))
+
+    # Make Av-PDF
+    def makepdf():
+        m = math.log(av_bar) - s ** 2 / 2.0
+        avtot = 500
+        avin = [0] * (avtot + 1)
+        pdfin = [0] * (avtot + 1)
+        with open('avpdf.dat', 'w') as f:
+            for i in range(avtot + 1):
+                lav = -2.0 + 4.0 * float(i) / float(avtot + 1)
+                avin[i] = 10.0 ** lav
+                pdfin[i] = pdf(float(avin[i]), s, m)
+                if pdfin[i] < 1e-10: pdfin[i] = 1e-10
+                f.write(str(avin[i]) + ' ' + str(pdfin[i]) + '\n')
+        return avin,pdfin,avtot
+
+    # Read inputted Av-PDF
+    def readpdf():
+        f = np.loadtxt(avpdf_file)
+        # print(f'reading {avpdf_file}')
+        avtot = len(f)
+        avin = f[:,0]
+        pdfin = f[:,1]
+        # avin = [Decimal('10') ** Decimal(x) for x in avin] # Issue: some values too large.
+        # pdfin = [10.0 ** x for x in pdfin]
+        pdfin[pdfin<1e-10] = 1e-10
+        return avin,pdfin,avtot
+
+    # Make prefix for all inputs
+    def makeprefix():
+        num = [str(i).zfill(2) for i in range(61)]
+        pref = []
+        for i in range(41):
+            for j in range(61):
+                pref.append("zcr" + num[i] + "_uv" + num[j])
+        return pref
+
+    # Input parameters
+    av_bar, s, metallicity = np.loadtxt('./pdfchem.params')
+    if metallicity == 0.1:   directory = 'Z0p1/'
+    elif metallicity == 0.5: directory = 'Z0p5/'
+    elif metallicity == 1.0: directory = 'Z1p0/'
+    elif metallicity == 2.0: directory = 'Z2p0/'
+
+    pref = makeprefix()
+    hdf5_file = f'models/{directory[:4]}.hdf5'
+
+    # Check if user has an input AV-PDF file. 
+    # If not, call makepdf to create a simulated PDF.
+    if os.path.isfile(avpdf_file):
+        # print("use input PDF")
+        avin, pdfin,avtot = readpdf()
+    else:
+        avin, pdfin,avtot = makepdf()
+
+    num_iter = 2501
+    # print(f"\r{screen_time()} Looping through {num_iter} Simulations")
+
+    # Create a shared list for output_strarray
+
+    # if parallel:
+    with Manager() as manager:
+        output_strarray = manager.list([[''] for _ in range(num_iter)])
+        with Pool() as pool:
+            pool.starmap(iteration, [(ipref, pref, hdf5_file, avtot, avin, pdfin, output_strarray) for ipref in range(num_iter)])
+        output_strarray = list(output_strarray)
+    # elif parallel == False:
+    #     output_strarray = list([[''] for _ in range(num_iter)])
+    #     for ipref in range(num_iter):
+    #         print(f"{ipref}")
+    #         iteration(ipref, pref, hdf5_file, avtot, avin, pdfin, output_strarray)
+    #     output_strarray = list(output_strarray)
+        # print(output_strarray[0])
+
+    outfile = open(output_file, 'w')
+    for sublist in output_strarray:
+        outfile.write(''.join(map(str, sublist)))
+    outfile.close()
+    
+    # print(f'{screen_time()} Finished!')
+
 if __name__ == '__main__':
+    # main()
     main()
-# %%

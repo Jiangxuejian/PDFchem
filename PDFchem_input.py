@@ -16,7 +16,7 @@ warnings.filterwarnings('ignore')
 # ------------------------------------------------------
 # -------------- User defined parameters ---------------
 # Check if there are AV-PDF file(s) provided by the user
-avpdf_dir =  os.path.normpath('../crop_image/200pixel_pdf')
+avpdf_dir =  os.path.normpath('../crop_image/100pixel_pdf')
 redo_calculation = 0
 
 # User-defined values for the Av,obs - PDF shape and metallicity
@@ -28,7 +28,7 @@ if metallicity not in [0.1, 0.5, 1.0, 2.0]:
     exit
 
 # For parallel mode: define how many threads will be run simultaneously:
-max_workers = 40
+max_workers = 50
 
 # -------------- User defined parameters ---------------
 # ------------------------------------------------------
@@ -515,7 +515,6 @@ successful runs return "0" signal after ~30 seconds depending on your machine
 def process_file(avpdf_file):
     #pdf_i = avpdf_file.split('.')[2].split('_')[-1]
     pdf_i =  avpdf_file.split('/')[-1].split('.')[0][-6:]
-    #shutil.copy(avpdf_file, 'avpdf_input.dat')
     #print(f'{screen_time()}{pdf_i}: Reading PDF file "{avpdf_file}" and running PDFchem...\n')
     pdfchem_output_file = os.path.join(f'pdfchem_outputs', f'output{pdf_i}.dat')
     if not os.path.exists('pdfchem_outputs'): os.mkdir('pdfchem_outputs')
@@ -547,7 +546,7 @@ with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
 #31,H2;  32,H;    33,e-; 
 
 f = open('CR-16.txt', 'w', encoding="utf-8")
-for avpdf_file in enumerate(avpdf_files):
+for j, avpdf_file in enumerate(avpdf_files):
     #pdf_i = pdf_i + 1
     pdf_i =  avpdf_file.split('/')[-1].split('.')[0][-6:]
     pdfchem_output_file = os.path.join(f'pdfchem_outputs', f'output{pdf_i}.dat')
@@ -593,7 +592,7 @@ for avpdf_file in enumerate(avpdf_files):
     yi = np.linspace(min(np.log10(UV)), max(np.log10(UV)), 50)
     points = np.array([np.log10(CR),np.log10(UV)]).T
 
-    Tco10_obs = np.loadtxt('../CO_data/co10_Tmb.txt', dtype={'names': ('xx', 'yy', 'Tmb', 'Unit'),
+    Tco10_obs = np.loadtxt('../CO_data/co10_Tmb_100pixel.txt', dtype={'names': ('xx', 'yy', 'Tmb', 'Unit'),
                      'formats': ('i4', 'i4', 'f4', 'S1')})
 
     xx = float(pdf_i[1:3]); yy = float(pdf_i[-2:])
