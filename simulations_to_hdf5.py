@@ -17,7 +17,7 @@ models = ['Z0p1', 'Z0p5', 'Z1p0', 'Z2p0']
 
 file_names = []
 for i in range(41):
-    for j in range(41):
+    for j in range(61):
         zcr_uv_params = f"zcr{i:02d}_uv{j:02d}.params"
         zcr_uv_pdr_fin = f"zcr{i:02d}_uv{j:02d}.pdr.fin"
         zcr_uv_spop_fin = f"zcr{i:02d}_uv{j:02d}.spop.fin"
@@ -30,9 +30,11 @@ for model in models:
     # Loop over the file names and store the data in the HDF5 file
     for file_name in file_names:
         # Load the data from the files
-        params_data = np.loadtxt(model + '/' + file_name[0])
-        pdr_data = np.loadtxt(model + '/' + file_name[1])
-        spop_data = np.loadtxt(model + '/' + file_name[2])
+        try:
+            params_data = np.loadtxt(model + '/' + file_name[0])
+            pdr_data = np.loadtxt(model + '/' + file_name[1])
+            spop_data = np.loadtxt(model + '/' + file_name[2])
+        except: continue
 
         # Create a group in the HDF5 file for this file
         group_name = f"{file_name[0].split('.')[0]}"
