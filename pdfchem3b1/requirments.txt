@@ -1,0 +1,6 @@
+numpy>=1.25
+h5py>=3.9.0
+matplotlib>=3.7.2
+scipy>=1.10
+mercury
+astropy
