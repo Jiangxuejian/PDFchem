@@ -67,7 +67,7 @@ def readfile(prefix, hdf5_file):
     model = h5py.File(hdf5_file, 'r')
     #directory = directory[:4]
     fuv, cosmicrays, Z = model[f'{prefix}/params'][:]
-    print(f'{hdf5_file} read in #2. Z = {Z}')
+    # print(f'{hdf5_file} read in #2. Z = {Z}')
 
     pdr = model[f'{prefix}/pdr']
     itot = np.shape(pdr)[0] # 490
