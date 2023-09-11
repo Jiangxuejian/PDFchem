@@ -1,23 +1,25 @@
 # %%
 import numpy as np
+import math, matplotlib
 import matplotlib.pyplot as plt
 import matplotlib.mlab as ml
-import matplotlib
 #from matplotlib import colors, cm
 from matplotlib.colors import ListedColormap, LinearSegmentedColormap
 from matplotlib.offsetbox import AnchoredText
-import os, glob, datetime, subprocess
+import os, glob, datetime
 from scipy.interpolate import griddata
-import concurrent.futures
+# import concurrent.futures
 # Suppress all warnings
 import warnings
 warnings.filterwarnings('ignore')
+import sys
+sys.path.append('./')
 
 # ------------------------------------------------------
 # -------------- User defined parameters ---------------
 # Check if there are AV-PDF file(s) provided by the user
-avpdf_dir =  os.path.normpath('./avpdf_input')
-# avpdf_dir =  os.path.normpath('../crop_image/200pixel_pdf')
+# avpdf_dir =  os.path.normpath('./avpdf_input')
+avpdf_dir =  os.path.normpath('../../crop_image/67pixel_pdf')
 redo_calculation = 1
 
 # User-defined values for the Av,obs - PDF shape and metallicity
@@ -126,7 +128,7 @@ def plot_individual(pdf_i, qty, xi, yi, points, title='', Tco10_obs=''):
     plt.clabel(CS,fmt='%1.1f')
     plt.contour(xi,yi,zi_tr,[0],colors='crimson',linewidths=3.0,linestyles='dashed') #plot HI-H2 transition (red line)
     try:
-        plt.contour(xi,yi,zi_tco10,[np.log10(Tco10_obs_i)],colors='m',linewidths=3.0, alpha=1) #plot HI-H2 transition (red line)
+        plt.contour(xi,yi,zi_tco10,[np.log10(Tco10_obs_i)],colors='m',linewidths=3.0, alpha=1) #plot CO line (magenta line)
     except:
         pass
     plt.xticks([-17,-16,-15,-14,-13])
@@ -506,34 +508,39 @@ def plot_collective(pdf_i, xi, yi, points, title=''):
 
 
 #%% Parallel Running PDFchem
-import pdfchem_algorithm_m
+import pdfchem
 def process_file(avpdf_file):
-    pdf_i =  avpdf_file.split('/')[-1].split('.')[0][-6:]
+    file_index =  avpdf_file.split('/')[-1].split('.')[0][-6:]
+    pdfchem_output_file = os.path.join(f'./pdfchem_output', f'output{file_index}.dat')
+    pdfchem.main(avpdf_file, pdfchem_output_file)
+    # pdf_i =  avpdf_file.split('/')[-1].split('.')[0][-6:]
     #print(f'{screen_time()}{pdf_i}: Reading PDF file "{avpdf_file}" and running PDFchem...\n')
-    pdfchem_output_file = os.path.join(f'pdfchem_output', f'output{pdf_i}.dat')
-    pdfchem_algorithm_m.main(avpdf_file, pdfchem_output_file)
+    # pdfchem_output_file = os.path.join(f'pdfchem_output', f'output{pdf_i}.dat')
+    # pdfchem
     #subprocess.call(['./pdfchem_algorithm_PDFinput', avpdf_file, pdfchem_output_file])
     #os.system(f'./pdfchem_algorithm_PDFinput {avpdf_file} output_{pdf_i}.dat')
     #shutil.copy('output.dat', pdfchem_output_file)
     return
 
 print(f'{screen_time()}: Started.')
-for f in avpdf_files:
-    process_file(f)
+if not os.path.exists('./pdfchem_output'): os.mkdir('./pdfchem_output')
+if redo_calculation == 1:
+    for f in avpdf_files:
+        process_file(f)
 print(f'{screen_time()}: Finished.')
 
 #%% 
 # Create a ProcessPoolExecutor with n worker threads
-with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
-    if redo_calculation == 1:
-        if not os.path.exists('pdfchem_output'): os.mkdir('pdfchem_output')
-        print(f'{screen_time()}: Reading \033[0;31m{max_workers}\33[0m PDF files and running PDFchem in parallel mode.')
-        # executor.map(process_file, avpdf_files)
-        futures = [executor.submit(process_file, filename) for filename in avpdf_files]
-        concurrent.futures.wait(futures)
-        print(f'{screen_time()}: Finished.')
-    else:
-        print(f'{screen_time()}: skip calculations.')
+# with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
+#     if redo_calculation == 1:
+#         if not os.path.exists('pdfchem_output'): os.mkdir('pdfchem_output')
+#         print(f'{screen_time()}: Reading \033[0;31m{max_workers}\33[0m PDF files and running PDFchem in parallel mode.')
+#         # executor.map(process_file, avpdf_files)
+#         futures = [executor.submit(process_file, filename) for filename in avpdf_files]
+#         concurrent.futures.wait(futures)
+#         print(f'{screen_time()}: Finished.')
+#     else:
+#         print(f'{screen_time()}: skip calculations.')
 
 #%%
 #Sequence of species

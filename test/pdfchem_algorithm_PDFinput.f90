@@ -32,9 +32,7 @@ integer :: IERR = 0
 character(len=100) :: input_file, output_file
 integer :: ios
 
-
 !gfortran -o pdfchem_algorithm_PDFinput pdfchem_algorithm_PDFinput.f90
-
 
 
 call constants
@@ -64,7 +62,7 @@ if (command_argument_count() /= 2) then
   write(6,*) "No input file and output file provided. Will create a simulated PDF"
   call makepdf
 else 
-  !write(6,*) "Reading user input PDF"
+  write(6,*) "Reading user input PDF"
   call readpdf
 endif
 !------------------------------------------------
@@ -195,7 +193,7 @@ end function
 subroutine readpdf  
   ! Get the input and output file names from the command line
   call get_command_argument(1, input_file)
-
+  write(*,*) "reading: ", input_file
   ! Open the input and output files
   close(1);open(1, file=input_file, status='old', action='read', iostat=ios)
   if (ios /= 0) then

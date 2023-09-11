@@ -67,7 +67,7 @@ def readfile(prefix, hdf5_file):
     model = h5py.File(hdf5_file, 'r')
     #directory = directory[:4]
     fuv, cosmicrays, Z = model[f'{prefix}/params'][:]
-    print(f'{hdf5_file} read in #2. Z = {Z}')
+    # print(f'{hdf5_file} read in #2. Z = {Z}')
 
     pdr = model[f'{prefix}/pdr']
     itot = np.shape(pdr)[0] # 490
@@ -109,7 +109,7 @@ def iteration(ipref, pref, hdf5_file, avtot, avin, pdfin, output_strarray):
     N = np.zeros(Nspec + 1)
     Ntgas, Ntot_nopdf, Nrho = 0, 0, 0
     fuv,cosmicrays,Z, tgas, tdust, abun, x, nh, itot, pop, tau = readfile(prefix, hdf5_file) # call readfile function
-    print(f'{hdf5_file} read in.')
+    # print(f'{hdf5_file} read in.')
     freq1 = np.tile(freq0[:, np.newaxis], (1, itot-1))
     mh1 = np.tile(mh[:, np.newaxis], (1, itot-1))
     tgas1 = np.tile(tgas[np.newaxis,:], (17, 1))
@@ -262,6 +262,18 @@ def main(avpdf_file='', output_file='output.dat'):
     outfile.close()
     
     # print(f'{screen_time()} Finished!')
+
+def NH_fits_to_pdf(fits_file):
+    from astropy.io import fits
+    from astropy.stats import histogram
+    with fits.open(fits_file) as hdul:
+        lg_NH = hdul[0].data
+    # lg_NH = lg_NH[lg_NH > 19.5]
+    lg_av = lg_NH + math.log10(6.3e-22)
+    lg_av_p, bin_edge = histogram(lg_av, bins=200, density=True)
+    bin = bin_edge[:-1] + np.diff(bin_edge)
+    return 10**bin, lg_av_p
+
 
 if __name__ == '__main__':
     main()
