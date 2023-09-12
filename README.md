@@ -1,4 +1,4 @@
-# PDFchem v3.0 beta 1 (2023)
+# PDFchem v3.0 beta 2 (2023)
 
 This is an updated version of v2.0 and is based on the paper by [Bisbas et al. (2023)](https://ui.adsabs.harvard.edu/abs/2023MNRAS.519..729B/abstract). It is a continuation of the work by [Bisbas et al. (2019)](https://ui.adsabs.harvard.edu/abs/2019MNRAS.485.3097B/abstract). PDFchem is a combined Fortran 90/95 and Python algorithm. In principle, the Python script (written for Jupyter notebook) is a plotting tool in which PDFchem can also be executed and it serves as a wrapper.
 
@@ -7,7 +7,7 @@ If you use PDFchem for your research, please cite the above papers and [the code
 ## Installing PDFchem
 
 To run PDFchem you need first to download the PDR simulations from [this Zenodo link](https://zenodo.org/record/7310833).
-Note that this new version use simulation files in `HDF5` format, which are different from that used by the previous version. 
+Note that this new version use simulation files in the `HDF5` format, which are different from that used by the previous version. 
 
 Once downloaded, you will need to untar it using the command
 ```
@@ -48,6 +48,8 @@ Next, install the necessary dependencies.
 pip install -r requirements.txt
 ```
 
+**Windows:** We have tested the program under a variety of operating systems. However, we recommend running `PDFchem` in the WSL which ensures that the program can have full functionality, such as saving Plotly figures into PDF files. If you only ha
+
 ## Running PDFchem
 
 In your terminal, go to the `PDFchem` folder and load the `PDFchem.ipynb` file  using `mercury` as the frontend UI:
@@ -56,7 +58,7 @@ cd pdfchem
 mercury run
 ```
 
-![webui_demo](.\webui_demo.jpg)
+![webui_demo](web-ui.png)
 
 The `mercury` UI will appear in your browser and is self-explanatory. One can explore the different options on the left panel. It supports three types of PDF:
 
