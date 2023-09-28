@@ -1,4 +1,4 @@
-# PDFchem v3.0 beta 2 (2023)
+# PDFchem v3.0 beta 3 (2023)
 
 This is an updated version of v2.0 and is based on the paper by [Bisbas et al. (2023)](https://ui.adsabs.harvard.edu/abs/2023MNRAS.519..729B/abstract). It is a continuation of the work by [Bisbas et al. (2019)](https://ui.adsabs.harvard.edu/abs/2019MNRAS.485.3097B/abstract). PDFchem is a combined Fortran 90/95 and Python algorithm. In principle, the Python script (written for Jupyter notebook) is a plotting tool in which PDFchem can also be executed and it serves as a wrapper.
 
@@ -11,15 +11,15 @@ Note that this new version use simulation files in the `HDF5` format, which are 
 
 Once downloaded, you will need to untar it using the command
 ```
-tar xvzf simulations.tgz
+tar xvzf simulations-hdf5.tgz
 ```
 
-This will extract four files in which all PDR files will be placed. The PDR files are in modern `HDF5` format. For more information about the files and how they are strutured, please refer to the [3D-PDR manual](https://uclchem.github.io/3DPDR_manual.pdf).
+This will extract four `HDF5` files in which all PDR files will be placed. For more information about the files and how they are structured, please refer to the [3D-PDR manual](https://uclchem.github.io/3DPDR_manual.pdf).
 
-The folder structure should looks like this:
+The folder structure should look like this:
 ```
 .
-├── PDFchem-mercury.ipynb
+├── PDFchem-ui.ipynb
 ├── README.md
 ├── avpdf.dat
 ├── avpdf_input
@@ -48,13 +48,13 @@ Next, install the necessary dependencies.
 pip install -r requirements.txt
 ```
 
-**Windows:** We have tested the program under a variety of operating systems. However, we recommend running `PDFchem` in the WSL which ensures that the program can have full functionality, such as saving Plotly figures into PDF files. If you only ha
+**Windows:** We have tested the program under a variety of operating systems. However, we recommend running `PDFchem` in the WSL which ensures that the program can have full functionality, such as saving Plotly figures into PDF files.
 
 ## Running PDFchem
 
 In your terminal, go to the `PDFchem` folder and load the `PDFchem.ipynb` file  using `mercury` as the frontend UI:
 ```
-cd pdfchem
+cd PDFchem
 mercury run
 ```
 
