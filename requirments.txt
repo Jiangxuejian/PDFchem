@@ -6,3 +6,5 @@ mercury
 astropy
 plotly
 kaleido
+pandas
+python-ternary
