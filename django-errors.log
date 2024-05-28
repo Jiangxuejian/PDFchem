@@ -1,0 +1,146 @@
+DJ ERROR 2024-05-28 12:34:49,872 server Exception inside application: unable to open database file
+Traceback (most recent call last):
+  File "/home/xjiang/sw/miniconda3/envs/pdfchem/lib/python3.12/site-packages/django/db/backends/base/base.py", line 289, in ensure_connection
+  File "/home/xjiang/sw/miniconda3/envs/pdfchem/lib/python3.12/site-packages/django/utils/asyncio.py", line 26, in inner
+  File "/home/xjiang/sw/miniconda3/envs/pdfchem/lib/python3.12/site-packages/django/db/backends/base/base.py", line 270, in connect
+  File "/home/xjiang/sw/miniconda3/envs/pdfchem/lib/python3.12/site-packages/django/utils/asyncio.py", line 26, in inner
+  File "/home/xjiang/sw/miniconda3/envs/pdfchem/lib/python3.12/site-packages/django/db/backends/sqlite3/base.py", line 180, in get_new_connection
+sqlite3.OperationalError: unable to open database file
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/xjiang/sw/miniconda3/envs/pdfchem/lib/python3.12/site-packages/django/contrib/staticfiles/handlers.py", line 101, in __call__
+  File "/home/xjiang/sw/miniconda3/envs/pdfchem/lib/python3.12/site-packages/channels/routing.py", line 62, in __call__
+  File "/home/xjiang/sw/miniconda3/envs/pdfchem/lib/python3.12/site-packages/mercury/apps/ws/middleware.py", line 30, in __call__
+  File "/home/xjiang/sw/miniconda3/envs/pdfchem/lib/python3.12/site-packages/channels/middleware.py", line 24, in __call__
+  File "/home/xjiang/sw/miniconda3/envs/pdfchem/lib/python3.12/site-packages/channels/sessions.py", line 47, in __call__
+  File "/home/xjiang/sw/miniconda3/envs/pdfchem/lib/python3.12/site-packages/channels/sessions.py", line 263, in __call__
+  File "/home/xjiang/sw/miniconda3/envs/pdfchem/lib/python3.12/site-packages/channels/auth.py", line 185, in __call__
+  File "/home/xjiang/sw/miniconda3/envs/pdfchem/lib/python3.12/site-packages/channels/middleware.py", line 24, in __call__
+  File "/home/xjiang/sw/miniconda3/envs/pdfchem/lib/python3.12/site-packages/channels/routing.py", line 132, in __call__
+  File "/home/xjiang/sw/miniconda3/envs/pdfchem/lib/python3.12/site-packages/channels/consumer.py", line 94, in app
+  File "/home/xjiang/sw/miniconda3/envs/pdfchem/lib/python3.12/site-packages/channels/consumer.py", line 58, in __call__
+  File "/home/xjiang/sw/miniconda3/envs/pdfchem/lib/python3.12/site-packages/channels/utils.py", line 50, in await_many_dispatch
+  File "/home/xjiang/sw/miniconda3/envs/pdfchem/lib/python3.12/site-packages/asgiref/sync.py", line 468, in __call__
+  File "/home/xjiang/sw/miniconda3/envs/pdfchem/lib/python3.12/concurrent/futures/thread.py", line 58, in run
+  File "/home/xjiang/sw/miniconda3/envs/pdfchem/lib/python3.12/site-packages/channels/db.py", line 13, in thread_handler
+  File "/home/xjiang/sw/miniconda3/envs/pdfchem/lib/python3.12/site-packages/asgiref/sync.py", line 522, in thread_handler
+  File "/home/xjiang/sw/miniconda3/envs/pdfchem/lib/python3.12/site-packages/channels/consumer.py", line 125, in dispatch
+  File "/home/xjiang/sw/miniconda3/envs/pdfchem/lib/python3.12/site-packages/channels/generic/websocket.py", line 63, in websocket_receive
+  File "/home/xjiang/sw/miniconda3/envs/pdfchem/lib/python3.12/site-packages/mercury/apps/ws/client.py", line 91, in receive
+  File "/home/xjiang/sw/miniconda3/envs/pdfchem/lib/python3.12/site-packages/mercury/apps/ws/client.py", line 163, in worker_ping
+  File "/home/xjiang/sw/miniconda3/envs/pdfchem/lib/python3.12/site-packages/django/db/models/query.py", line 412, in __bool__
+  File "/home/xjiang/sw/miniconda3/envs/pdfchem/lib/python3.12/site-packages/django/db/models/query.py", line 1881, in _fetch_all
+  File "/home/xjiang/sw/miniconda3/envs/pdfchem/lib/python3.12/site-packages/django/db/models/query.py", line 91, in __iter__
+  File "/home/xjiang/sw/miniconda3/envs/pdfchem/lib/python3.12/site-packages/django/db/models/sql/compiler.py", line 1560, in execute_sql
+  File "/home/xjiang/sw/miniconda3/envs/pdfchem/lib/python3.12/site-packages/django/utils/asyncio.py", line 26, in inner
+  File "/home/xjiang/sw/miniconda3/envs/pdfchem/lib/python3.12/site-packages/django/db/backends/base/base.py", line 330, in cursor
+  File "/home/xjiang/sw/miniconda3/envs/pdfchem/lib/python3.12/site-packages/django/db/backends/base/base.py", line 306, in _cursor
+  File "/home/xjiang/sw/miniconda3/envs/pdfchem/lib/python3.12/site-packages/django/utils/asyncio.py", line 26, in inner
+  File "/home/xjiang/sw/miniconda3/envs/pdfchem/lib/python3.12/site-packages/django/db/backends/base/base.py", line 288, in ensure_connection
+  File "/home/xjiang/sw/miniconda3/envs/pdfchem/lib/python3.12/site-packages/django/db/utils.py", line 91, in __exit__
+  File "/home/xjiang/sw/miniconda3/envs/pdfchem/lib/python3.12/site-packages/django/db/backends/base/base.py", line 289, in ensure_connection
+  File "/home/xjiang/sw/miniconda3/envs/pdfchem/lib/python3.12/site-packages/django/utils/asyncio.py", line 26, in inner
+  File "/home/xjiang/sw/miniconda3/envs/pdfchem/lib/python3.12/site-packages/django/db/backends/base/base.py", line 270, in connect
+  File "/home/xjiang/sw/miniconda3/envs/pdfchem/lib/python3.12/site-packages/django/utils/asyncio.py", line 26, in inner
+  File "/home/xjiang/sw/miniconda3/envs/pdfchem/lib/python3.12/site-packages/django/db/backends/sqlite3/base.py", line 180, in get_new_connection
+django.db.utils.OperationalError: unable to open database file
+DJ ERROR 2024-05-28 12:34:55,893 server Exception inside application: unable to open database file
+Traceback (most recent call last):
+  File "/home/xjiang/sw/miniconda3/envs/pdfchem/lib/python3.12/site-packages/django/db/backends/base/base.py", line 289, in ensure_connection
+  File "/home/xjiang/sw/miniconda3/envs/pdfchem/lib/python3.12/site-packages/django/utils/asyncio.py", line 26, in inner
+  File "/home/xjiang/sw/miniconda3/envs/pdfchem/lib/python3.12/site-packages/django/db/backends/base/base.py", line 270, in connect
+  File "/home/xjiang/sw/miniconda3/envs/pdfchem/lib/python3.12/site-packages/django/utils/asyncio.py", line 26, in inner
+  File "/home/xjiang/sw/miniconda3/envs/pdfchem/lib/python3.12/site-packages/django/db/backends/sqlite3/base.py", line 180, in get_new_connection
+sqlite3.OperationalError: unable to open database file
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/xjiang/sw/miniconda3/envs/pdfchem/lib/python3.12/site-packages/django/contrib/staticfiles/handlers.py", line 101, in __call__
+  File "/home/xjiang/sw/miniconda3/envs/pdfchem/lib/python3.12/site-packages/channels/routing.py", line 62, in __call__
+  File "/home/xjiang/sw/miniconda3/envs/pdfchem/lib/python3.12/site-packages/mercury/apps/ws/middleware.py", line 30, in __call__
+  File "/home/xjiang/sw/miniconda3/envs/pdfchem/lib/python3.12/site-packages/channels/middleware.py", line 24, in __call__
+  File "/home/xjiang/sw/miniconda3/envs/pdfchem/lib/python3.12/site-packages/channels/sessions.py", line 47, in __call__
+  File "/home/xjiang/sw/miniconda3/envs/pdfchem/lib/python3.12/site-packages/channels/sessions.py", line 263, in __call__
+  File "/home/xjiang/sw/miniconda3/envs/pdfchem/lib/python3.12/site-packages/channels/auth.py", line 185, in __call__
+  File "/home/xjiang/sw/miniconda3/envs/pdfchem/lib/python3.12/site-packages/channels/middleware.py", line 24, in __call__
+  File "/home/xjiang/sw/miniconda3/envs/pdfchem/lib/python3.12/site-packages/channels/routing.py", line 132, in __call__
+  File "/home/xjiang/sw/miniconda3/envs/pdfchem/lib/python3.12/site-packages/channels/consumer.py", line 94, in app
+  File "/home/xjiang/sw/miniconda3/envs/pdfchem/lib/python3.12/site-packages/channels/consumer.py", line 58, in __call__
+  File "/home/xjiang/sw/miniconda3/envs/pdfchem/lib/python3.12/site-packages/channels/utils.py", line 50, in await_many_dispatch
+  File "/home/xjiang/sw/miniconda3/envs/pdfchem/lib/python3.12/site-packages/asgiref/sync.py", line 468, in __call__
+  File "/home/xjiang/sw/miniconda3/envs/pdfchem/lib/python3.12/concurrent/futures/thread.py", line 58, in run
+  File "/home/xjiang/sw/miniconda3/envs/pdfchem/lib/python3.12/site-packages/channels/db.py", line 13, in thread_handler
+  File "/home/xjiang/sw/miniconda3/envs/pdfchem/lib/python3.12/site-packages/asgiref/sync.py", line 522, in thread_handler
+  File "/home/xjiang/sw/miniconda3/envs/pdfchem/lib/python3.12/site-packages/channels/consumer.py", line 125, in dispatch
+  File "/home/xjiang/sw/miniconda3/envs/pdfchem/lib/python3.12/site-packages/channels/generic/websocket.py", line 38, in websocket_connect
+  File "/home/xjiang/sw/miniconda3/envs/pdfchem/lib/python3.12/site-packages/mercury/apps/ws/client.py", line 34, in connect
+  File "/home/xjiang/sw/miniconda3/envs/pdfchem/lib/python3.12/site-packages/django/db/models/manager.py", line 87, in manager_method
+  File "/home/xjiang/sw/miniconda3/envs/pdfchem/lib/python3.12/site-packages/django/db/models/query.py", line 633, in get
+  File "/home/xjiang/sw/miniconda3/envs/pdfchem/lib/python3.12/site-packages/django/db/models/query.py", line 380, in __len__
+  File "/home/xjiang/sw/miniconda3/envs/pdfchem/lib/python3.12/site-packages/django/db/models/query.py", line 1881, in _fetch_all
+  File "/home/xjiang/sw/miniconda3/envs/pdfchem/lib/python3.12/site-packages/django/db/models/query.py", line 91, in __iter__
+  File "/home/xjiang/sw/miniconda3/envs/pdfchem/lib/python3.12/site-packages/django/db/models/sql/compiler.py", line 1560, in execute_sql
+  File "/home/xjiang/sw/miniconda3/envs/pdfchem/lib/python3.12/site-packages/django/utils/asyncio.py", line 26, in inner
+  File "/home/xjiang/sw/miniconda3/envs/pdfchem/lib/python3.12/site-packages/django/db/backends/base/base.py", line 330, in cursor
+  File "/home/xjiang/sw/miniconda3/envs/pdfchem/lib/python3.12/site-packages/django/db/backends/base/base.py", line 306, in _cursor
+  File "/home/xjiang/sw/miniconda3/envs/pdfchem/lib/python3.12/site-packages/django/utils/asyncio.py", line 26, in inner
+  File "/home/xjiang/sw/miniconda3/envs/pdfchem/lib/python3.12/site-packages/django/db/backends/base/base.py", line 288, in ensure_connection
+  File "/home/xjiang/sw/miniconda3/envs/pdfchem/lib/python3.12/site-packages/django/db/utils.py", line 91, in __exit__
+  File "/home/xjiang/sw/miniconda3/envs/pdfchem/lib/python3.12/site-packages/django/db/backends/base/base.py", line 289, in ensure_connection
+  File "/home/xjiang/sw/miniconda3/envs/pdfchem/lib/python3.12/site-packages/django/utils/asyncio.py", line 26, in inner
+  File "/home/xjiang/sw/miniconda3/envs/pdfchem/lib/python3.12/site-packages/django/db/backends/base/base.py", line 270, in connect
+  File "/home/xjiang/sw/miniconda3/envs/pdfchem/lib/python3.12/site-packages/django/utils/asyncio.py", line 26, in inner
+  File "/home/xjiang/sw/miniconda3/envs/pdfchem/lib/python3.12/site-packages/django/db/backends/sqlite3/base.py", line 180, in get_new_connection
+django.db.utils.OperationalError: unable to open database file
+DJ ERROR 2024-05-28 12:35:01,913 server Exception inside application: unable to open database file
+Traceback (most recent call last):
+  File "/home/xjiang/sw/miniconda3/envs/pdfchem/lib/python3.12/site-packages/django/db/backends/base/base.py", line 289, in ensure_connection
+  File "/home/xjiang/sw/miniconda3/envs/pdfchem/lib/python3.12/site-packages/django/utils/asyncio.py", line 26, in inner
+  File "/home/xjiang/sw/miniconda3/envs/pdfchem/lib/python3.12/site-packages/django/db/backends/base/base.py", line 270, in connect
+  File "/home/xjiang/sw/miniconda3/envs/pdfchem/lib/python3.12/site-packages/django/utils/asyncio.py", line 26, in inner
+  File "/home/xjiang/sw/miniconda3/envs/pdfchem/lib/python3.12/site-packages/django/db/backends/sqlite3/base.py", line 180, in get_new_connection
+sqlite3.OperationalError: unable to open database file
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/xjiang/sw/miniconda3/envs/pdfchem/lib/python3.12/site-packages/django/contrib/staticfiles/handlers.py", line 101, in __call__
+  File "/home/xjiang/sw/miniconda3/envs/pdfchem/lib/python3.12/site-packages/channels/routing.py", line 62, in __call__
+  File "/home/xjiang/sw/miniconda3/envs/pdfchem/lib/python3.12/site-packages/mercury/apps/ws/middleware.py", line 30, in __call__
+  File "/home/xjiang/sw/miniconda3/envs/pdfchem/lib/python3.12/site-packages/channels/middleware.py", line 24, in __call__
+  File "/home/xjiang/sw/miniconda3/envs/pdfchem/lib/python3.12/site-packages/channels/sessions.py", line 47, in __call__
+  File "/home/xjiang/sw/miniconda3/envs/pdfchem/lib/python3.12/site-packages/channels/sessions.py", line 263, in __call__
+  File "/home/xjiang/sw/miniconda3/envs/pdfchem/lib/python3.12/site-packages/channels/auth.py", line 185, in __call__
+  File "/home/xjiang/sw/miniconda3/envs/pdfchem/lib/python3.12/site-packages/channels/middleware.py", line 24, in __call__
+  File "/home/xjiang/sw/miniconda3/envs/pdfchem/lib/python3.12/site-packages/channels/routing.py", line 132, in __call__
+  File "/home/xjiang/sw/miniconda3/envs/pdfchem/lib/python3.12/site-packages/channels/consumer.py", line 94, in app
+  File "/home/xjiang/sw/miniconda3/envs/pdfchem/lib/python3.12/site-packages/channels/consumer.py", line 58, in __call__
+  File "/home/xjiang/sw/miniconda3/envs/pdfchem/lib/python3.12/site-packages/channels/utils.py", line 50, in await_many_dispatch
+  File "/home/xjiang/sw/miniconda3/envs/pdfchem/lib/python3.12/site-packages/asgiref/sync.py", line 468, in __call__
+  File "/home/xjiang/sw/miniconda3/envs/pdfchem/lib/python3.12/concurrent/futures/thread.py", line 58, in run
+  File "/home/xjiang/sw/miniconda3/envs/pdfchem/lib/python3.12/site-packages/channels/db.py", line 13, in thread_handler
+  File "/home/xjiang/sw/miniconda3/envs/pdfchem/lib/python3.12/site-packages/asgiref/sync.py", line 522, in thread_handler
+  File "/home/xjiang/sw/miniconda3/envs/pdfchem/lib/python3.12/site-packages/channels/consumer.py", line 125, in dispatch
+  File "/home/xjiang/sw/miniconda3/envs/pdfchem/lib/python3.12/site-packages/channels/generic/websocket.py", line 38, in websocket_connect
+  File "/home/xjiang/sw/miniconda3/envs/pdfchem/lib/python3.12/site-packages/mercury/apps/ws/client.py", line 34, in connect
+  File "/home/xjiang/sw/miniconda3/envs/pdfchem/lib/python3.12/site-packages/django/db/models/manager.py", line 87, in manager_method
+  File "/home/xjiang/sw/miniconda3/envs/pdfchem/lib/python3.12/site-packages/django/db/models/query.py", line 633, in get
+  File "/home/xjiang/sw/miniconda3/envs/pdfchem/lib/python3.12/site-packages/django/db/models/query.py", line 380, in __len__
+  File "/home/xjiang/sw/miniconda3/envs/pdfchem/lib/python3.12/site-packages/django/db/models/query.py", line 1881, in _fetch_all
+  File "/home/xjiang/sw/miniconda3/envs/pdfchem/lib/python3.12/site-packages/django/db/models/query.py", line 91, in __iter__
+  File "/home/xjiang/sw/miniconda3/envs/pdfchem/lib/python3.12/site-packages/django/db/models/sql/compiler.py", line 1560, in execute_sql
+  File "/home/xjiang/sw/miniconda3/envs/pdfchem/lib/python3.12/site-packages/django/utils/asyncio.py", line 26, in inner
+  File "/home/xjiang/sw/miniconda3/envs/pdfchem/lib/python3.12/site-packages/django/db/backends/base/base.py", line 330, in cursor
+  File "/home/xjiang/sw/miniconda3/envs/pdfchem/lib/python3.12/site-packages/django/db/backends/base/base.py", line 306, in _cursor
+  File "/home/xjiang/sw/miniconda3/envs/pdfchem/lib/python3.12/site-packages/django/utils/asyncio.py", line 26, in inner
+  File "/home/xjiang/sw/miniconda3/envs/pdfchem/lib/python3.12/site-packages/django/db/backends/base/base.py", line 288, in ensure_connection
+  File "/home/xjiang/sw/miniconda3/envs/pdfchem/lib/python3.12/site-packages/django/db/utils.py", line 91, in __exit__
+  File "/home/xjiang/sw/miniconda3/envs/pdfchem/lib/python3.12/site-packages/django/db/backends/base/base.py", line 289, in ensure_connection
+  File "/home/xjiang/sw/miniconda3/envs/pdfchem/lib/python3.12/site-packages/django/utils/asyncio.py", line 26, in inner
+  File "/home/xjiang/sw/miniconda3/envs/pdfchem/lib/python3.12/site-packages/django/db/backends/base/base.py", line 270, in connect
+  File "/home/xjiang/sw/miniconda3/envs/pdfchem/lib/python3.12/site-packages/django/utils/asyncio.py", line 26, in inner
+  File "/home/xjiang/sw/miniconda3/envs/pdfchem/lib/python3.12/site-packages/django/db/backends/sqlite3/base.py", line 180, in get_new_connection
+django.db.utils.OperationalError: unable to open database file
