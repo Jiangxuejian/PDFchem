@@ -12,3 +12,4 @@ dependencies:
   - conda-forge::mercury
   - conda-forge::python-kaleido
   - conda-forge::python-ternary
+  - conda-forge::aplpy
