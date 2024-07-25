@@ -211,6 +211,19 @@ def readpdf(avpdf_file):
     pdfin[pdfin<1e-10] = 1e-10
     return avin,pdfin,avtot
 
+def NH_fits2pdf(fits_file, output_path):
+    from astropy.io import fits
+    from astropy.stats import histogram
+    bins=100
+    with fits.open(fits_file) as hdul:
+        NH = hdul[0].data
+    lg_av = np.log10(NH) + np.log10(6.3e-22)
+    lg_av_p, bin_edge = histogram(lg_av, bins=bins, density=True)
+    bin = bin_edge[:-1] + np.diff(bin_edge)
+    # return 10**bin, lg_av_p 
+    np.savetxt(f'{output_path}/avpdf_input.dat', np.array((10**bin, lg_av_p)).T)
+    return f'{output_path}/avpdf_input.dat'
+
 def main(avpdf_file='', output_file='output.dat'):
     # Make prefix for all inputs
     def makeprefix():

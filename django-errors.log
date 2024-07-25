@@ -144,3 +144,83 @@ Traceback (most recent call last):
   File "/home/xjiang/sw/miniconda3/envs/pdfchem/lib/python3.12/site-packages/django/utils/asyncio.py", line 26, in inner
   File "/home/xjiang/sw/miniconda3/envs/pdfchem/lib/python3.12/site-packages/django/db/backends/sqlite3/base.py", line 180, in get_new_connection
 django.db.utils.OperationalError: unable to open database file
+DJ ERROR 2024-07-09 16:21:07,082 log Internal Server Error: /api/v1/fp/revert/
+Traceback (most recent call last):
+  File "/Users/xjiang/miniconda3/envs/pdfchem/lib/python3.10/site-packages/asgiref/sync.py", line 518, in thread_handler
+    raise exc_info[1]
+  File "/Users/xjiang/miniconda3/envs/pdfchem/lib/python3.10/site-packages/django/core/handlers/exception.py", line 42, in inner
+    response = await get_response(request)
+  File "/Users/xjiang/miniconda3/envs/pdfchem/lib/python3.10/site-packages/django/core/handlers/base.py", line 253, in _get_response_async
+    response = await wrapped_callback(
+  File "/Users/xjiang/miniconda3/envs/pdfchem/lib/python3.10/site-packages/asgiref/sync.py", line 468, in __call__
+    ret = await asyncio.shield(exec_coro)
+  File "/Users/xjiang/miniconda3/envs/pdfchem/lib/python3.10/site-packages/asgiref/current_thread_executor.py", line 40, in run
+    result = self.fn(*self.args, **self.kwargs)
+  File "/Users/xjiang/miniconda3/envs/pdfchem/lib/python3.10/site-packages/asgiref/sync.py", line 522, in thread_handler
+    return func(*args, **kwargs)
+  File "/Users/xjiang/miniconda3/envs/pdfchem/lib/python3.10/site-packages/django/views/decorators/csrf.py", line 56, in wrapper_view
+    return view_func(*args, **kwargs)
+  File "/Users/xjiang/miniconda3/envs/pdfchem/lib/python3.10/site-packages/django/views/generic/base.py", line 104, in view
+    return self.dispatch(request, *args, **kwargs)
+  File "/Users/xjiang/miniconda3/envs/pdfchem/lib/python3.10/site-packages/rest_framework/views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+  File "/Users/xjiang/miniconda3/envs/pdfchem/lib/python3.10/site-packages/rest_framework/views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "/Users/xjiang/miniconda3/envs/pdfchem/lib/python3.10/site-packages/rest_framework/views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "/Users/xjiang/miniconda3/envs/pdfchem/lib/python3.10/site-packages/rest_framework/views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "/Users/xjiang/miniconda3/envs/pdfchem/lib/python3.10/site-packages/django_drf_filepond/views.py", line 203, in delete
+    tu.delete()
+  File "/Users/xjiang/miniconda3/envs/pdfchem/lib/python3.10/site-packages/django/db/models/base.py", line 1132, in delete
+    return collector.delete()
+  File "/Users/xjiang/miniconda3/envs/pdfchem/lib/python3.10/site-packages/django/db/models/deletion.py", line 512, in delete
+    signals.post_delete.send(
+  File "/Users/xjiang/miniconda3/envs/pdfchem/lib/python3.10/site-packages/django/dispatch/dispatcher.py", line 176, in send
+    return [
+  File "/Users/xjiang/miniconda3/envs/pdfchem/lib/python3.10/site-packages/django/dispatch/dispatcher.py", line 177, in <listcomp>
+    (receiver, receiver(signal=self, sender=sender, **named))
+  File "/Users/xjiang/miniconda3/envs/pdfchem/lib/python3.10/site-packages/django_drf_filepond/models.py", line 186, in delete_temp_upload_file
+    os.rmdir(file_dir)
+OSError: [Errno 66] Directory not empty: '/Users/xjiang/miniconda3/envs/pdfchem/lib/python3.10/site-packages/mercury/uploads-temp/AhcjDA8Nu5MVy5J5NzAiuz'
+DJ ERROR 2024-07-09 16:21:07,093 runserver [35;1mHTTP DELETE /api/v1/fp/revert/ 500 [0.05, 127.0.0.1:57516][0m
+DJ ERROR 2024-07-09 16:25:16,908 log Internal Server Error: /api/v1/fp/revert/
+Traceback (most recent call last):
+  File "/Users/xjiang/miniconda3/envs/pdfchem/lib/python3.10/site-packages/asgiref/sync.py", line 518, in thread_handler
+    raise exc_info[1]
+  File "/Users/xjiang/miniconda3/envs/pdfchem/lib/python3.10/site-packages/django/core/handlers/exception.py", line 42, in inner
+    response = await get_response(request)
+  File "/Users/xjiang/miniconda3/envs/pdfchem/lib/python3.10/site-packages/django/core/handlers/base.py", line 253, in _get_response_async
+    response = await wrapped_callback(
+  File "/Users/xjiang/miniconda3/envs/pdfchem/lib/python3.10/site-packages/asgiref/sync.py", line 468, in __call__
+    ret = await asyncio.shield(exec_coro)
+  File "/Users/xjiang/miniconda3/envs/pdfchem/lib/python3.10/site-packages/asgiref/current_thread_executor.py", line 40, in run
+    result = self.fn(*self.args, **self.kwargs)
+  File "/Users/xjiang/miniconda3/envs/pdfchem/lib/python3.10/site-packages/asgiref/sync.py", line 522, in thread_handler
+    return func(*args, **kwargs)
+  File "/Users/xjiang/miniconda3/envs/pdfchem/lib/python3.10/site-packages/django/views/decorators/csrf.py", line 56, in wrapper_view
+    return view_func(*args, **kwargs)
+  File "/Users/xjiang/miniconda3/envs/pdfchem/lib/python3.10/site-packages/django/views/generic/base.py", line 104, in view
+    return self.dispatch(request, *args, **kwargs)
+  File "/Users/xjiang/miniconda3/envs/pdfchem/lib/python3.10/site-packages/rest_framework/views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+  File "/Users/xjiang/miniconda3/envs/pdfchem/lib/python3.10/site-packages/rest_framework/views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "/Users/xjiang/miniconda3/envs/pdfchem/lib/python3.10/site-packages/rest_framework/views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "/Users/xjiang/miniconda3/envs/pdfchem/lib/python3.10/site-packages/rest_framework/views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "/Users/xjiang/miniconda3/envs/pdfchem/lib/python3.10/site-packages/django_drf_filepond/views.py", line 203, in delete
+    tu.delete()
+  File "/Users/xjiang/miniconda3/envs/pdfchem/lib/python3.10/site-packages/django/db/models/base.py", line 1132, in delete
+    return collector.delete()
+  File "/Users/xjiang/miniconda3/envs/pdfchem/lib/python3.10/site-packages/django/db/models/deletion.py", line 512, in delete
+    signals.post_delete.send(
+  File "/Users/xjiang/miniconda3/envs/pdfchem/lib/python3.10/site-packages/django/dispatch/dispatcher.py", line 176, in send
+    return [
+  File "/Users/xjiang/miniconda3/envs/pdfchem/lib/python3.10/site-packages/django/dispatch/dispatcher.py", line 177, in <listcomp>
+    (receiver, receiver(signal=self, sender=sender, **named))
+  File "/Users/xjiang/miniconda3/envs/pdfchem/lib/python3.10/site-packages/django_drf_filepond/models.py", line 186, in delete_temp_upload_file
+    os.rmdir(file_dir)
+OSError: [Errno 66] Directory not empty: '/Users/xjiang/miniconda3/envs/pdfchem/lib/python3.10/site-packages/mercury/uploads-temp/CUARoa9MmBy7cYjG4LS8B6'
+DJ ERROR 2024-07-09 16:25:16,912 runserver [35;1mHTTP DELETE /api/v1/fp/revert/ 500 [0.03, 127.0.0.1:58599][0m
