@@ -31,7 +31,7 @@ ipref = 0
 num = [''] * 2
 pref = [''] * 2501
 Nspec = 33  
-vturb = 1e6 # microturbulent velocity in cm/s
+vturb = 1e5 # microturbulent velocity in cm/s
             # NOTE: all given PDR calculations used 1~km/s. 
 
 # Constants for calculations
@@ -176,9 +176,9 @@ def iteration(ipref, pref, hdf5_file, avtot, avin, pdfin, output_strarray):
     sublist = output_strarray[ipref] + [f'{fuv:11.2e}{cosmicrays:11.2e}{Z:11.2e}{Ntgas/N[0]:11.2e}']
     for i in range(1, Nspec+1):
         sublist = sublist + [f'{N[i]/N[0]:11.2e}']
-    sublist = sublist + [f'{Ntr[0]:11.2e}{Ntr[1]:11.2e}{Ntr[3]:11.2e}']
+    sublist = sublist + [f'{Ntr[0]/Ntot:11.2e}{Ntr[1]/Ntot:11.2e}{Ntr[3]/Ntot:11.2e}']
     for i in range(7,17):
-        sublist = sublist + [f'{Ntr[i]:11.2e}']
+        sublist = sublist + [f'{Ntr[i]/Ntot:11.2e}']
     sublist = sublist + ['\n']
     output_strarray[ipref] = sublist
 
