@@ -113,5 +113,5 @@ xuejian.astro@gmail.com / jiangxuejian@zhejianglab.com
 ```
 
 Thomas Bisbas ([thomasbisbas.com](http://thomasbisbas.com))
-Xuejian Jiang ([Jiangxuejian.github.io](Jiangxuejian.github.io))
+Xuejian Jiang ([Jiangxuejian.github.io](http://jiangxuejian.github.io))
 
