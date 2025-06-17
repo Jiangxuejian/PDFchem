@@ -5,6 +5,8 @@ This is an updated version of v2.0 and is based on the paper by [Bisbas et al. (
 If you use PDFchem for your research, please cite the above papers and [the code](https://ui.adsabs.harvard.edu/abs/2022ascl.soft11014B/abstract).
 
 ## Installing PDFchem
+PDFchem relies on Python environment and we strongly recommend installing **miniconda** before continue.
+
 
 To run PDFchem, first download the PDR simulations from [this Zenodo link](https://zenodo.org/record/7310833).
 Note that this new version use simulation files in the `HDF5` format, which are different from that used by the previous version. 
@@ -42,7 +44,7 @@ The folder structure should look like this:
 └── webui_demo.jpg
 ```
 
-Next, create a python environment with `conda`:
+Next, we create a python environment with `conda`:
 ```
 conda env create -f pdfchem-environment.yml
 ```
@@ -57,6 +59,7 @@ This will install all the necessary dependencies to run PDFchem.
 
 In your terminal, go to the `PDFchem` folder and load the `PDFchem.ipynb` file  using `mercury` as the frontend UI:
 ```
+conda activate pdfchem
 cd PDFchem
 mercury run
 ```
