@@ -1,22 +1,19 @@
-# PDFchem v3.0 (2024-05)
+# PDFchem v3.0 beta 4 (2024-05)
 
 This is an updated version of v2.0 and is based on the paper by [Bisbas et al. (2023)](https://ui.adsabs.harvard.edu/abs/2023MNRAS.519..729B/abstract). It is a continuation of the work by [Bisbas et al. (2019)](https://ui.adsabs.harvard.edu/abs/2019MNRAS.485.3097B/abstract). PDFchem is a combined Fortran 90/95 and Python algorithm. In principle, the Python script (written for Jupyter notebook) is a plotting tool in which PDFchem can also be executed and it serves as a wrapper.
 
 If you use PDFchem for your research, please cite the above papers and [the code](https://ui.adsabs.harvard.edu/abs/2022ascl.soft11014B/abstract).
 
 ## Installing PDFchem
-PDFchem relies on Python environment and we strongly recommend installing **miniconda** before continue.
+PDFchem relies on Python environment and we strongly recommend installing **miniconda** (https://www.anaconda.com/docs/getting-started/miniconda/install) before continue.
 
 
-To run PDFchem, first download the PDR simulations from [this Zenodo link](https://zenodo.org/record/7310833).
+To run PDFchem, first download the PDR simulations (link will be provided upon paper acceptance) `Z0p1_010K.hdf5` and place them under the \bluett{models} folder. (More models will be provided upon request)
+
 Note that this new version use simulation files in the `HDF5` format, which are different from that used by the previous version. 
 
-Once downloaded, you will need to untar it using the command
-```
-tar xvzf simulations-hdf5.tgz
-```
 
-This will extract four `HDF5` files in which all PDR files will be placed. For more information about the files and how they are structured, please refer to the [3D-PDR manual](https://uclchem.github.io/3DPDR_manual.pdf).
+<!-- This will extract four `HDF5` files in which all PDR files will be placed. For more information about the files and how they are structured, please refer to the [3D-PDR manual](https://uclchem.github.io/3DPDR_manual.pdf). -->
 
 The folder structure should look like this:
 ```
@@ -33,15 +30,15 @@ The folder structure should look like this:
 │   ├── output_diff.dat
 │   └── output_sf.dat
 ├── models
-│   ├── Z0p1.hdf5
-│   ├── Z0p5.hdf5
-│   ├── Z1p0.hdf5
-│   └── Z2p0.hdf5
+│   ├── Z0p1_010K.hdf5
+│   ├── Z0p5.hdf5 (optional)
+│   ├── Z1p0.hdf5 (optional)
+│   └── Z2p0.hdf5 (optional)
 ├── output.dat
 ├── pdfchem.py
 ├── pdfchem_output
 ├── requirments.txt
-└── webui_demo.jpg
+└── webui_demo.png
 ```
 
 Next, we create a python environment with `conda`:
