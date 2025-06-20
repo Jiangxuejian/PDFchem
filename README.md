@@ -41,13 +41,20 @@ The folder structure should look like this:
 └── webui_demo.png
 ```
 
-Next, we create a python environment with `conda`:
-```
-conda env create -f pdfchem-environment.yml
-```
-This will install all the necessary dependencies to run PDFchem.
+First, we create a python environment (Do NOT use `conda` to create the environment -- there is a bug):
 
-(Alternatively, one may install the necessary dependencies with `pip install -r requirements.txt`)
+```
+python -m venv pdfchem
+```
+Then activate it -- we will install dependencies in this environment:
+```
+source pdfchem/bin/activate
+```
+Then, in the `PDFchem` folder, install the dependencies:
+```
+pip install -r requirements.txt
+
+```
 
 
 **Windows:** We have tested the program under different operating systems. However, we recommend running `PDFchem` in the WSL which ensures that the program can have full functionality, such as saving Plotly figures into PDF files.
