@@ -78,16 +78,14 @@ def readfile(prefix, hdf5_file):
     tdust= pdr[:,4] 
     #etype = np.int16(pdr[:,5])
     nh =   pdr[:,6]
+    G0 =   pdr[:,7]
     abun = pdr[:,8:]
 
     spop = model[f'{prefix}/spop'][:].T       # 490, 28
     pop = np.zeros((17, 2, itot))
     tau = np.zeros((17, itot))
 
-    dummy1, dummy2,  pop[0, 0], pop[0, 1], dummy3, dummy4, dummy5, pop[1, 0], pop[1, 1], pop[2, 1],\
-    dummy6, dummy7, pop[4, 0], pop[4, 1], pop[5, 1], dummy8, dummy9, \
-    pop[7, 0], pop[7, 1], pop[8, 1], pop[9, 1], pop[10, 1], \
-    pop[11, 1], pop[12, 1], pop[13, 1], pop[14, 1], pop[15, 1], pop[16, 1] = spop[:]
+    dummy1, dummy2,  pop[0, 0], pop[0, 1], dummy3, dummy4, dummy5, pop[1, 0], pop[1, 1], pop[2, 1], dummy6, dummy7, pop[4, 0], pop[4, 1], pop[5, 1], dummy8, dummy9,     pop[7, 0], pop[7, 1], pop[8, 1], pop[9, 1], pop[10, 1],    pop[11, 1], pop[12, 1], pop[13, 1], pop[14, 1], pop[15, 1], pop[16, 1] = spop[:]
 
     # record pairs
     pop[2, 0, :] = pop[1, 0, :]; pop[3, 1, :] = pop[2, 1, :]; pop[3, 0, :] = pop[1, 1, :]
@@ -97,7 +95,7 @@ def readfile(prefix, hdf5_file):
     pop[14, 0, :] = pop[13, 1,:]; pop[15, 0, :] = pop[14, 1,:]; pop[16, 0, :] = pop[15, 1,:]
     
     model.close()
-    return fuv,cosmicrays,Z, tgas, tdust, abun, x, nh, itot, pop, tau
+    return fuv,cosmicrays,Z, tgas, tdust, abun, x, nh, G0, itot, pop, tau
 
 def iteration(ipref, pref, hdf5_file, avtot, avin, pdfin, output_strarray):
     global tau_incr
@@ -107,9 +105,9 @@ def iteration(ipref, pref, hdf5_file, avtot, avin, pdfin, output_strarray):
 
     # calculate column densities of species
     N = np.zeros(Nspec + 1)
-    Ntgas, Ntot_nopdf, Nrho = 0, 0, 0
-    fuv,cosmicrays,Z, tgas, tdust, abun, x, nh, itot, pop, tau = readfile(prefix, hdf5_file) # call readfile function
-    print(f'{hdf5_file} read in.')
+    Ntgas, Ntdust, NG0, Ntot_nopdf, Nrho = 0, 0, 0, 0, 0
+    fuv,cosmicrays,Z, tgas, tdust, abun, x, nh, G0, itot, pop, tau = readfile(prefix, hdf5_file) # call readfile function
+    # print(f'{hdf5_file} read in.')
     freq1 = np.tile(freq0[:, np.newaxis], (1, itot-1))
     mh1 = np.tile(mh[:, np.newaxis], (1, itot-1))
     tgas1 = np.tile(tgas[np.newaxis,:], (17, 1))
@@ -134,6 +132,7 @@ def iteration(ipref, pref, hdf5_file, avtot, avin, pdfin, output_strarray):
     step = np.abs(x[:-1] - x[1:]) * pc2cm
 
     Avobs = 0.06*(nh[:-1]**0.69)        # Av,obs -- nH relation
+    # Avobs = 0.05*np.exp(1.6*nh[:-1]**0.12)        # Av,obs -- nH relation
     # print('\n')
     for i in range(itot-1):
         k = bisect.bisect_left(avin, Avobs[i])  
@@ -143,6 +142,8 @@ def iteration(ipref, pref, hdf5_file, avtot, avin, pdfin, output_strarray):
             N[0] += 0.5*(nh[i]+nh[i+1])*factor3 # total column density
             N[1:Nspec+1] += 0.5*(nh[i]*abun[i,:] + nh[i+1]*abun[i+1,:])*factor3 # species
             Ntgas += 0.5*(nh[i]*tgas[i] + nh[i+1]*tgas[i+1])*factor3 # for <Tgas>
+            Ntdust+= 0.5*(nh[i]*tdust[i]+ nh[i+1]*tdust[i+1])*factor3 # for <Tdust>
+            NG0   += 0.5*(nh[i]*G0[i]+ nh[i+1]*G0[i+1])*factor3 # for <G0>
             Nrho += 0.5*(nh[i]**2*abun[i,30] + nh[i+1]**2*abun[i+1,30])*factor3
         # print(i, k, nh[i], Avobs[i], avin[k], pdfin[k], N[0], Ntgas, Nrho)
         tau_incr += phi[:,i]*( factor1 )*frac[:,i]*step[i] # optical depth calculation
@@ -173,7 +174,7 @@ def iteration(ipref, pref, hdf5_file, avtot, avin, pdfin, output_strarray):
             tau_ci  = tau_ci  + dtau[1]*pdfin[k]
             tau_co  = tau_co  + dtau[7]*pdfin[k]
 
-    sublist = output_strarray[ipref] + [f'{fuv:11.2e}{cosmicrays:11.2e}{Z:11.2e}{Ntgas/N[0]:11.2e}']
+    sublist = output_strarray[ipref] + [f'{fuv:11.2e}{cosmicrays:11.2e}{Z:11.2e}{Ntgas/N[0]:11.2e}{Ntdust/N[0]:11.2e}{NG0/N[0]:11.2e}']
     for i in range(1, Nspec+1):
         sublist = sublist + [f'{N[i]/N[0]:11.2e}']
     sublist = sublist + [f'{Ntr[0]/Ntot:11.2e}{Ntr[1]/Ntot:11.2e}{Ntr[3]/Ntot:11.2e}']
@@ -195,7 +196,7 @@ def makepdf(av_bar, s):
     pdfin = [0] * (avtot + 1)
     with open('avpdf.dat', 'w') as f:
         for i in range(avtot + 1):
-            lav = -2.0 + 4.0 * float(i) / float(avtot + 1)
+            lav = -2.0 + 4.0 * i / (avtot + 1)
             avin[i] = 10.0 ** lav
             pdfin[i] = pdf(float(avin[i]), s, m)
             if pdfin[i] < 1e-10: pdfin[i] = 1e-10
@@ -218,13 +219,14 @@ def NH_fits2pdf(fits_file, output_path):
     with fits.open(fits_file) as hdul:
         NH = hdul[0].data
     lg_av = np.log10(NH) + np.log10(6.3e-22)
+    # lg_av = NH + np.log10(6.3e-22)
     lg_av_p, bin_edge = histogram(lg_av, bins=bins, density=True)
     bin = bin_edge[:-1] + np.diff(bin_edge)
     # return 10**bin, lg_av_p 
     np.savetxt(f'{output_path}/avpdf_input.dat', np.array((10**bin, lg_av_p)).T)
     return f'{output_path}/avpdf_input.dat'
 
-def main(avpdf_file='', output_file='output.dat'):
+def main(avpdf_file='', output_file='output.dat', model = ''):
     # Make prefix for all inputs
     def makeprefix():
         num = [str(i).zfill(2) for i in range(61)]
@@ -236,18 +238,21 @@ def main(avpdf_file='', output_file='output.dat'):
 
     # Input parameters
     av_bar, s, metallicity = np.loadtxt('./pdfchem.params')
-    if metallicity == 0.1:   directory = 'Z0p1/'
-    elif metallicity == 0.5: directory = 'Z0p5/'
-    elif metallicity == 1.0: directory = 'Z1p0/'
-    elif metallicity == 2.0: directory = 'Z2p0/'
+    if model == '':
+        if metallicity == 0.1:   model = 'Z0p1'
+        elif metallicity == 0.5: model = 'Z0p5'
+        elif metallicity == 1.0: model = 'Z1p0_010K'
+        elif metallicity == 2.0: model = 'Z2p0'
 
     pref = makeprefix()
-    hdf5_file = f'models/{directory[:4]}.hdf5'
+    hdf5_file = f'models/{model}.hdf5'
     # Check if user has an input AV-PDF file. 
     # If not, call makepdf to create a simulated PDF.
     if os.path.isfile(avpdf_file):
+        print(f"processed {avpdf_file}")
         avin, pdfin,avtot = readpdf(avpdf_file)
     else:
+        print(f'processed model PDF')
         avin, pdfin,avtot = makepdf(av_bar, s)
 
     num_iter = 2501

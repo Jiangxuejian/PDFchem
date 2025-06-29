@@ -1,19 +1,17 @@
-# PDFchem v3.0 beta 4 (2024-05)
+# PDFchem v3.0 (2024-05)
 
 This is an updated version of v2.0 and is based on the paper by [Bisbas et al. (2023)](https://ui.adsabs.harvard.edu/abs/2023MNRAS.519..729B/abstract). It is a continuation of the work by [Bisbas et al. (2019)](https://ui.adsabs.harvard.edu/abs/2019MNRAS.485.3097B/abstract). PDFchem is a combined Fortran 90/95 and Python algorithm. In principle, the Python script (written for Jupyter notebook) is a plotting tool in which PDFchem can also be executed and it serves as a wrapper.
 
 If you use PDFchem for your research, please cite the above papers and [the code](https://ui.adsabs.harvard.edu/abs/2022ascl.soft11014B/abstract).
 
 ## Installing PDFchem
-PDFchem relies on Python environment and we strongly recommend installing **miniconda** (https://www.anaconda.com/docs/getting-started/miniconda/install) before continue.
+PDFchem relies on Python environment and we strongly recommend installing **miniconda** (https://www.anaconda.com/docs/getting-started/miniconda/install) before continuing.
 
 
-To run PDFchem, first download the PDR simulations (link will be provided upon paper acceptance) `Z0p1_010K.hdf5` and place them under the \bluett{models} folder. (More models will be provided upon request)
+To run PDFchem, first download the PDR simulations (link will be provided upon paper acceptance) `Z0p1_010K.hdf5` and place them under the `models` folder. (More models will be provided upon request)
 
-Note that this new version use simulation files in the `HDF5` format, which are different from that used by the previous version. 
+Note that this new version uses simulation files in the `HDF5` format, which are different from that used by the previous version. 
 
-
-<!-- This will extract four `HDF5` files in which all PDR files will be placed. For more information about the files and how they are structured, please refer to the [3D-PDR manual](https://uclchem.github.io/3DPDR_manual.pdf). -->
 
 The folder structure should look like this:
 ```
@@ -41,7 +39,7 @@ The folder structure should look like this:
 └── webui_demo.png
 ```
 
-First, we create a python environment (Do NOT use `conda` to create the environment -- there is a bug):
+Firstly, it is recommended to create a python environment (Do NOT use `conda` to install `mercury` -- there is a bug):
 
 ```
 python -m venv pdfchem
@@ -61,9 +59,9 @@ pip install -r requirements.txt
 
 ## Running PDFchem
 
-In your terminal, go to the `PDFchem` folder and load the `PDFchem.ipynb` file  using `mercury` as the frontend UI:
+In your terminal, go to the `PDFchem` folder and load the `PDFchem.ipynb` file using `mercury` as the frontend UI:
 ```
-conda activate pdfchem
+source pdfchem/bin/activate
 cd PDFchem
 mercury run
 ```
@@ -76,7 +74,7 @@ The `mercury` UI will appear in your browser and is self-explanatory. One can ex
 - Turn the switch on the top ON to upload a PDF file, then the program will read the PDF (in most cases it will be from observations); click the button "Run a single PDF" then the program will do the calculations based on this PDF. Metallicity can be selected.
 - Turn the second switch ON to run in batch mode on multiple PDFs provided by users. Please consider this as a demo; We encourage our users to write their own scripts in this case, as one likely has complicated file names, folder structures, and various ways of subsequent analysis, etc. 
 
-**Results & Figures:**  After the calculation is finished, result files will be placed in a folder `./pdfchem_output`. The main window will show an example figure based on the result. One can select which species to plot with the dropdown menu. For the batch mode, this will only show the first figure as an example.
+**Results & Figures:** After the calculation is finished, result files will be placed in a folder `./pdfchem_output`. The main window will show an example figure based on the result. One can select which species to plot with the dropdown menu. For the batch mode, this will only show the first figure as an example.
 
 **Reference value**: To highlight a reference value on the figure, turn the switch below the dropdown menu ON to enter your value. For example, when you have a CO spectrum and you know its peak, then this can help you constrain the range of the resultant radiation strength and Cosmic Ray Ionization Rate.
 
@@ -95,18 +93,14 @@ The available brightness temperatures consider the carbon cycle only:
 - [CI] (1-0), (2-1)
 - CO (1-0) ... (10-9)
 
-## Alternative interactive plots
 
-If you are interested in exploring the results with interactive plots, you can use the following notebook (with thanks to Theodoros Topkaras for the contribution)
-```
-jupyter notebook PDFchem_plotly.ipynb
 ```
 
 ## Deploy to your local site
 
 If you want to run the PDFchem service on your local server so that other colleagues and use it on the intranet, there are a few necessary steps:
 
-- Assuming that your server's IP is 1.2.3.4 and you want to use port 4321 for the service, you need to locate and edit the `mercury` setting file (for example `~/sw/miniconda3/envs/pdfchem/lib/python3.12/site-packages/mercury/server/settings.py`),  and add your IP `"1.2.3.4"` to the `ALLOWED_HOSTS` section
+- Assuming that your server's IP is 1.2.3.4 and you want to use port 4321 for the service, you need to locate and edit the `mercury` setting file (for example `~/sw/miniconda3/envs/pdfchem/lib/python3.12/site-packages/mercury/server/settings.py`), and add your IP `"1.2.3.4"` to the `ALLOWED_HOSTS` section
 - Then, run the following command to run `mercury`:
   ```mercury run 0.0.0.0:4321 &```
 - Then the service will be available to any computer in the intranet via `http://1.2.3.4:4321/app/pdfchem-mercury`
